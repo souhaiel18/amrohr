@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Button from './ui/Button';
 import { 
   Home, 
   Users, 
@@ -120,13 +121,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </p>
                   <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
                 </div>
-                <button
+                <Button
                   onClick={handleLogout}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-full"
-                  title="Logout"
+                  variant="secondary"
+                  size="sm"
+                  className="ml-3"
                 >
-                  <LogOut className="h-5 w-5" />
-                </button>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Déconnexion</span>
+                  <span className="sm:hidden">Logout</span>
+                </Button>
               </div>
             </div>
           </div>
