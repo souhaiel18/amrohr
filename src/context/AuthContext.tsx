@@ -1,127 +1,266 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { User } from '../types';
-import { mockEmployees } from '../data/mockData';
+import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { User as SupabaseUser } from '@supabase/supabase-js'
+import { supabase, AuthUser, getUserProfile } from '../lib/supabase'
 
 interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
+  user: AuthUser | null
+  supabaseUser: SupabaseUser | null
+  isAuthenticated: boolean
+  isLoading: boolean
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  signUp: (email: string, password: string, profileData: Partial<AuthUser>) => Promise<{ success: boolean; error?: string }>
+  signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>
+  updateProfile: (updates: Partial<AuthUser>) => Promise<{ success: boolean; error?: string }>
 }
 
 type AuthAction = 
-  | { type: 'LOGIN_START' }
-  | { type: 'LOGIN_SUCCESS'; payload: User }
-  | { type: 'LOGIN_FAILURE' }
-  | { type: 'LOGOUT' }
-  | { type: 'INIT_AUTH'; payload: User | null };
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_USER'; payload: { user: AuthUser | null; supabaseUser: SupabaseUser | null } }
+  | { type: 'SIGN_OUT' }
 
 const initialState: AuthState = {
   user: null,
+  supabaseUser: null,
   isAuthenticated: false,
   isLoading: true
-};
+}
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
-    case 'LOGIN_START':
-      return { ...state, isLoading: true };
-    case 'LOGIN_SUCCESS':
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload }
+    case 'SET_USER':
       return {
         ...state,
-        user: action.payload,
-        isAuthenticated: true,
+        user: action.payload.user,
+        supabaseUser: action.payload.supabaseUser,
+        isAuthenticated: !!action.payload.user,
         isLoading: false
-      };
-    case 'LOGIN_FAILURE':
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        isLoading: false
-      };
-    case 'LOGOUT':
+      }
+    case 'SIGN_OUT':
       return {
         ...state,
         user: null,
+        supabaseUser: null,
         isAuthenticated: false,
         isLoading: false
-      };
-    case 'INIT_AUTH':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: !!action.payload,
-        isLoading: false
-      };
+      }
     default:
-      return state;
+      return state
   }
-};
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [state, dispatch] = useReducer(authReducer, initialState)
 
   useEffect(() => {
-    // Check for stored authentication
-    const storedUser = localStorage.getItem('hrm_user');
-    if (storedUser) {
+    // Récupérer la session actuelle
+    const getSession = async () => {
       try {
-        const user = JSON.parse(storedUser);
-        dispatch({ type: 'INIT_AUTH', payload: user });
-      } catch {
-        localStorage.removeItem('hrm_user');
-        dispatch({ type: 'INIT_AUTH', payload: null });
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting session:', error)
+          dispatch({ type: 'SET_LOADING', payload: false })
+          return
+        }
+
+        if (session?.user) {
+          const profile = await getUserProfile(session.user.id)
+          dispatch({ 
+            type: 'SET_USER', 
+            payload: { user: profile, supabaseUser: session.user } 
+          })
+        } else {
+          dispatch({ type: 'SET_LOADING', payload: false })
+        }
+      } catch (error) {
+        console.error('Error in getSession:', error)
+        dispatch({ type: 'SET_LOADING', payload: false })
       }
-    } else {
-      dispatch({ type: 'INIT_AUTH', payload: null });
     }
-  }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    dispatch({ type: 'LOGIN_START' });
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock authentication - check against mock employees
-    const user = mockEmployees.find(emp => emp.email === email);
-    
-    // For demo purposes, any password works for existing users
-    if (user && password.length > 0) {
-      localStorage.setItem('hrm_user', JSON.stringify(user));
-      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
-      return true;
-    } else {
-      dispatch({ type: 'LOGIN_FAILURE' });
-      return false;
+    getSession()
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email)
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          const profile = await getUserProfile(session.user.id)
+          dispatch({ 
+            type: 'SET_USER', 
+            payload: { user: profile, supabaseUser: session.user } 
+          })
+        } else if (event === 'SIGNED_OUT') {
+          dispatch({ type: 'SIGN_OUT' })
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          const profile = await getUserProfile(session.user.id)
+          dispatch({ 
+            type: 'SET_USER', 
+            payload: { user: profile, supabaseUser: session.user } 
+          })
+        } else {
+          dispatch({ type: 'SET_LOADING', payload: false })
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true })
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) {
+        dispatch({ type: 'SET_LOADING', payload: false })
+        return { success: false, error: error.message }
+      }
+
+      if (data.user) {
+        const profile = await getUserProfile(data.user.id)
+        if (!profile) {
+          await supabase.auth.signOut()
+          return { success: false, error: 'Profil employé non trouvé. Contactez votre administrateur.' }
+        }
+        
+        dispatch({ 
+          type: 'SET_USER', 
+          payload: { user: profile, supabaseUser: data.user } 
+        })
+      }
+
+      return { success: true }
+    } catch (error) {
+      dispatch({ type: 'SET_LOADING', payload: false })
+      return { success: false, error: 'Erreur de connexion' }
     }
-  };
+  }
 
-  const logout = () => {
-    localStorage.removeItem('hrm_user');
-    dispatch({ type: 'LOGOUT' });
-  };
+  const signUp = async (email: string, password: string, profileData: Partial<AuthUser>) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true })
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: profileData.firstName,
+            last_name: profileData.lastName
+          }
+        }
+      })
+
+      if (error) {
+        dispatch({ type: 'SET_LOADING', payload: false })
+        return { success: false, error: error.message }
+      }
+
+      if (data.user) {
+        // Créer le profil employé
+        await createEmployeeProfile(data.user.id, email, profileData)
+        
+        // Note: L'utilisateur devra confirmer son email avant de pouvoir se connecter
+        dispatch({ type: 'SET_LOADING', payload: false })
+        return { success: true }
+      }
+
+      return { success: false, error: 'Erreur lors de la création du compte' }
+    } catch (error) {
+      dispatch({ type: 'SET_LOADING', payload: false })
+      return { success: false, error: 'Erreur lors de l\'inscription' }
+    }
+  }
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut()
+      dispatch({ type: 'SIGN_OUT' })
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Erreur lors de la réinitialisation' }
+    }
+  }
+
+  const updateProfile = async (updates: Partial<AuthUser>) => {
+    try {
+      if (!state.user) return { success: false, error: 'Utilisateur non connecté' }
+
+      const { error } = await supabase
+        .from('employees')
+        .update({
+          first_name: updates.firstName,
+          last_name: updates.lastName,
+          phone: updates.phone,
+          department: updates.department,
+          position: updates.position
+        })
+        .eq('auth_user_id', state.supabaseUser?.id)
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      // Recharger le profil
+      const updatedProfile = await getUserProfile(state.supabaseUser!.id)
+      if (updatedProfile) {
+        dispatch({ 
+          type: 'SET_USER', 
+          payload: { user: updatedProfile, supabaseUser: state.supabaseUser } 
+        })
+      }
+
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Erreur lors de la mise à jour' }
+    }
+  }
 
   const value: AuthContextType = {
     ...state,
-    login,
-    logout
-  };
+    signIn,
+    signUp,
+    signOut,
+    resetPassword,
+    updateProfile
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
 
 export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
-};
+  return context
+}
