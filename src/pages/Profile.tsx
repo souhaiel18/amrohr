@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { mockEmployees, mockTimeOffRequests, mockDocuments } from '../data/mockData';
+import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   Mail, 
@@ -22,13 +22,14 @@ import Input from '../components/ui/Input';
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { employees, timeOffRequests, documents } = useData();
   const [activeTab, setActiveTab] = useState('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>({});
 
-  const employee = mockEmployees.find(emp => emp.id === id);
-  const employeeRequests = mockTimeOffRequests.filter(req => req.employeeId === id);
-  const employeeDocuments = mockDocuments.filter(doc => doc.employeeId === id);
+  const employee = employees.find(emp => emp.id === id);
+  const employeeRequests = timeOffRequests.filter(req => req.employeeId === id);
+  const employeeDocuments = documents.filter(doc => doc.employeeId === id);
 
   if (!employee) {
     return (

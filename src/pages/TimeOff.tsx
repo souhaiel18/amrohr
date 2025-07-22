@@ -4,13 +4,14 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Modal from '../components/ui/Modal';
-import { mockTimeOffRequests } from '../data/mockData';
+import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, Clock, Plus } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 
 const TimeOff: React.FC = () => {
   const { user } = useAuth();
+  const { timeOffRequests, addTimeOffRequest } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     type: 'paid',
@@ -19,7 +20,7 @@ const TimeOff: React.FC = () => {
     reason: ''
   });
 
-  const userRequests = mockTimeOffRequests.filter(req => req.employeeId === user?.id);
+  const userRequests = timeOffRequests.filter(req => req.employeeId === user?.id);
 
   const leaveTypes = [
     { value: 'paid', label: 'Paid Time Off' },
@@ -30,8 +31,14 @@ const TimeOff: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would submit to backend here
-    console.log('Submitting time off request:', formData);
+    addTimeOffRequest({
+      ...formData,
+      employeeId: user?.id || '',
+      employeeName: `${user?.firstName} ${user?.lastName}` || '',
+      days: calculateDays(formData.startDate, formData.endDate),
+      requestDate: new Date().toISOString(),
+      status: 'pending'
+    });
     setIsModalOpen(false);
     setFormData({ type: 'paid', startDate: '', endDate: '', reason: '' });
   };

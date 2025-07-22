@@ -13,7 +13,8 @@ import {
   Menu, 
   X,
   Shield,
-  FolderOpen
+  FolderOpen,
+  Database
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -37,6 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Time Off', href: '/time-off', icon: Calendar },
     { name: 'Documents', href: '/documents', icon: FolderOpen },
     { name: 'Job Roles', href: '/roles', icon: Shield },
+    { name: 'Gestion Données', href: '/data-management', icon: Database },
     ...(user?.role === 'admin' || user?.role === 'hr' ? [
       { name: 'Admin Panel', href: '/admin', icon: Settings }
     ] : [])

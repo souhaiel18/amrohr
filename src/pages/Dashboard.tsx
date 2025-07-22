@@ -1,20 +1,21 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { mockEmployees, mockTimeOffRequests, mockAnnouncements } from '../data/mockData';
 import { Users, Calendar, Clock, Gift, TrendingUp } from 'lucide-react';
 import { format, isWithinInterval, addDays, parseISO } from 'date-fns';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { employees, timeOffRequests, announcements } = useData();
   
-  const totalEmployees = mockEmployees.filter(emp => emp.status === 'active').length;
-  const pendingRequests = mockTimeOffRequests.filter(req => req.status === 'pending').length;
+  const totalEmployees = employees.filter(emp => emp.status === 'active').length;
+  const pendingRequests = timeOffRequests.filter(req => req.status === 'pending').length;
   
   // Calculate upcoming birthdays (next 30 days)
   const today = new Date();
   const next30Days = addDays(today, 30);
-  const upcomingBirthdays = mockEmployees.filter(emp => {
+  const upcomingBirthdays = employees.filter(emp => {
     const birthDate = parseISO(emp.birthDate);
     const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
     const nextYearBirthday = new Date(today.getFullYear() + 1, birthDate.getMonth(), birthDate.getDate());
@@ -105,7 +106,7 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockTimeOffRequests.slice(0, 5).map((request) => (
+              {timeOffRequests.slice(0, 5).map((request) => (
                 <div key={request.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{request.employeeName}</p>
@@ -137,7 +138,7 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockAnnouncements.slice(0, 3).map((announcement) => (
+              {announcements.slice(0, 3).map((announcement) => (
                 <div key={announcement.id} className="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

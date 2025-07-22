@@ -4,7 +4,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Modal from '../components/ui/Modal';
-import { mockEmployees, mockTimeOffRequests } from '../data/mockData';
+import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   Users, 
@@ -22,6 +22,14 @@ import { format, parseISO } from 'date-fns';
 
 const Admin: React.FC = () => {
   const { user } = useAuth();
+  const { 
+    employees, 
+    timeOffRequests, 
+    addEmployee, 
+    updateEmployee, 
+    approveTimeOffRequest, 
+    rejectTimeOffRequest 
+  } = useData();
   const [activeTab, setActiveTab] = useState('employees');
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +59,7 @@ const Admin: React.FC = () => {
     );
   }
 
-  const departments = [...new Set(mockEmployees.map(emp => emp.department))];
+  const departments = [...new Set(employees.map(emp => emp.department))];
   const departmentOptions = [
     { value: '', label: 'All Departments' },
     ...departments.map(dept => ({ value: dept, label: dept }))
@@ -63,18 +71,28 @@ const Admin: React.FC = () => {
     { value: 'admin', label: 'Admin' }
   ];
 
-  const filteredEmployees = mockEmployees.filter(employee => {
+  const filteredEmployees = employees.filter(employee => {
     const matchesSearch = `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment = departmentFilter === '' || employee.department === departmentFilter;
     return matchesSearch && matchesDepartment;
   });
 
-  const pendingRequests = mockTimeOffRequests.filter(req => req.status === 'pending');
+  const pendingRequests = timeOffRequests.filter(req => req.status === 'pending');
 
   const handleAddEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would save to backend here
-    console.log('Adding employee:', newEmployee);
+    addEmployee({
+      ...newEmployee,
+      birthDate: newEmployee.startDate, // Placeholder
+      status: 'active',
+      address: '',
+      employeeId: `EMP${String(employees.length + 1).padStart(3, '0')}`,
+      emergencyContact: {
+        name: '',
+        relationship: '',
+        phone: ''
+      }
+    });
     setIsAddEmployeeModalOpen(false);
     setNewEmployee({
       firstName: '',
@@ -89,18 +107,20 @@ const Admin: React.FC = () => {
   };
 
   const handleApproveRequest = (requestId: string) => {
-    // In a real app, you would update the backend here
-    console.log('Approving request:', requestId);
+    approveTimeOffRequest(requestId, `${user?.firstName} ${user?.lastName}`);
   };
 
   const handleRejectRequest = (requestId: string) => {
-    // In a real app, you would update the backend here
-    console.log('Rejecting request:', requestId);
+    rejectTimeOffRequest(requestId, `${user?.firstName} ${user?.lastName}`);
   };
 
   const handleToggleEmployeeStatus = (employeeId: string) => {
-    // In a real app, you would update the backend here
-    console.log('Toggling employee status:', employeeId);
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (employee) {
+      updateEmployee(employeeId, { 
+        status: employee.status === 'active' ? 'inactive' : 'active' 
+      });
+    }
   };
 
   const getRoleColor = (role: string) => {
@@ -137,7 +157,7 @@ const Admin: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Employees</p>
-                <p className="text-2xl font-semibold text-gray-900">{mockEmployees.length}</p>
+                <p className="text-2xl font-semibold text-gray-900">{employees.length}</p>
               </div>
             </div>
           </CardContent>
@@ -154,7 +174,7 @@ const Admin: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Active</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {mockEmployees.filter(emp => emp.status === 'active').length}
+                  {employees.filter(emp => emp.status === 'active').length}
                 </p>
               </div>
             </div>
@@ -188,7 +208,7 @@ const Admin: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Inactive</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {mockEmployees.filter(emp => emp.status === 'inactive').length}
+                  {employees.filter(emp => emp.status === 'inactive').length}
                 </p>
               </div>
             </div>

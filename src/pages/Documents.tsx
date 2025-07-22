@@ -4,13 +4,14 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Modal from '../components/ui/Modal';
-import { mockDocuments } from '../data/mockData';
+import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { FileText, Upload, Download, Eye, Search } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 const Documents: React.FC = () => {
   const { user } = useAuth();
+  const { documents, addDocument } = useData();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -21,7 +22,7 @@ const Documents: React.FC = () => {
   });
 
   const isAdminOrHR = user?.role === 'admin' || user?.role === 'hr';
-  const filteredDocuments = mockDocuments.filter(doc => {
+  const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          doc.employeeName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === '' || doc.type === typeFilter;
@@ -46,8 +47,14 @@ const Documents: React.FC = () => {
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would upload to backend here
-    console.log('Uploading document:', formData);
+    addDocument({
+      ...formData,
+      employeeId: user?.id || '',
+      employeeName: `${user?.firstName} ${user?.lastName}` || '',
+      size: formData.file ? `${Math.round(formData.file.size / 1024)} KB` : '0 KB',
+      uploadDate: new Date().toISOString(),
+      url: '#'
+    });
     setIsUploadModalOpen(false);
     setFormData({ name: '', type: 'other', file: null });
   };

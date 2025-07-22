@@ -3,21 +3,22 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
-import { mockEmployees } from '../data/mockData';
+import { useData } from '../context/DataContext';
 import { Mail, Phone, MapPin, Search } from 'lucide-react';
 
 const Directory: React.FC = () => {
+  const { employees } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const departments = [...new Set(mockEmployees.map(emp => emp.department))];
+  const departments = [...new Set(employees.map(emp => emp.department))];
   const departmentOptions = [
     { value: '', label: 'All Departments' },
     ...departments.map(dept => ({ value: dept, label: dept }))
   ];
 
-  const filteredEmployees = mockEmployees.filter(employee => {
+  const filteredEmployees = employees.filter(employee => {
     const matchesSearch = `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment = departmentFilter === '' || employee.department === departmentFilter;
     return matchesSearch && matchesDepartment && employee.status === 'active';
