@@ -44,9 +44,21 @@ const PayrollDocuments: React.FC = () => {
   const isAdminOrHR = user?.role === 'admin' || user?.role === 'hr';
   
   useEffect(() => {
-    fetchDocuments();
+    // Vérifier si Supabase est configuré
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+    
+    if (supabaseUrl && supabaseAnonKey) {
+      fetchDocuments();
+    } else {
+      // Mode démonstration
+      setLoading(false)
+    }
+    
     if (isAdminOrHR) {
-      fetchEmployees();
+      if (supabaseUrl && supabaseAnonKey) {
+        fetchEmployees();
+      }
     }
   }, [user]);
 
