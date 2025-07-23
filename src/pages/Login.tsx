@@ -311,13 +311,27 @@ const Login: React.FC = () => {
 
         {!isSignUp && (
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">Mode Démo :</h4>
+            <h4 className="text-sm font-medium text-blue-900 mb-2">🚀 Comptes de Test Disponibles :</h4>
             <div className="text-xs text-blue-800 space-y-1">
-              <div>Pour tester l'application :</div>
-              <div>1. Créez un nouveau compte avec le formulaire d'inscription</div>
-              <div>2. Ou utilisez un compte existant si vous en avez déjà créé un</div>
-              <div className="mt-2 text-blue-700">
-                <strong>Note :</strong> Assurez-vous que Supabase est configuré avec vos variables d'environnement
+              <div className="grid grid-cols-1 gap-2 mt-2">
+                <div className="bg-white p-2 rounded border">
+                  <div className="font-medium text-purple-800">👑 Admin</div>
+                  <div>Email: admin@test.com</div>
+                  <div>Password: admin123</div>
+                </div>
+                <div className="bg-white p-2 rounded border">
+                  <div className="font-medium text-blue-800">👥 RH Manager</div>
+                  <div>Email: hr@test.com</div>
+                  <div>Password: hr123</div>
+                </div>
+                <div className="bg-white p-2 rounded border">
+                  <div className="font-medium text-green-800">👤 Employé</div>
+                  <div>Email: employee@test.com</div>
+                  <div>Password: employee123</div>
+                </div>
+              </div>
+              <div className="mt-3 text-blue-700 text-center">
+                <strong>Ou créez votre propre compte avec le formulaire d'inscription</strong>
               </div>
             </div>
           </div>
