@@ -62,19 +62,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        console.log('🔄 Initialisation de l\'authentification...')
         const { data: { session } } = await supabase.auth.getSession()
+        console.log('📋 Session:', session ? 'Trouvée' : 'Aucune')
         
         if (session?.user) {
+          console.log('👤 Utilisateur trouvé:', session.user.email)
           const profile = await getUserProfile(session.user.id)
+          console.log('📊 Profil:', profile ? 'Trouvé' : 'Non trouvé')
           if (profile) {
             dispatch({ 
               type: 'SET_USER', 
               payload: { user: profile, supabaseUser: session.user } 
             })
+            console.log('✅ Utilisateur connecté:', profile.firstName, profile.lastName)
           } else {
+            console.log('❌ Aucun profil employé trouvé')
             dispatch({ type: 'SET_LOADING', payload: false })
           }
         } else {
+          console.log('ℹ️ Aucune session active')
           dispatch({ type: 'SET_LOADING', payload: false })
         }
       } catch (error) {

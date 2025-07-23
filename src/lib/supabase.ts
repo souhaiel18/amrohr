@@ -4,10 +4,15 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 console.log('🔗 Connexion à Supabase...')
-console.log('URL:', supabaseUrl ? '✅ Configurée' : '❌ Manquante')
-console.log('Key:', supabaseAnonKey ? '✅ Configurée' : '❌ Manquante')
+console.log('URL:', supabaseUrl)
+console.log('Key:', supabaseAnonKey ? 'Configurée' : 'Manquante')
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Variables Supabase manquantes!')
+  console.log('Vérifiez votre fichier .env')
+}
+
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -34,6 +39,7 @@ export interface AuthUser {
 // Fonction pour obtenir le profil utilisateur complet
 export const getUserProfile = async (userId: string): Promise<AuthUser | null> => {
   try {
+    console.log('🔍 Recherche du profil pour:', userId)
     const { data, error } = await supabase
       .from('employees')
       .select('*')
@@ -46,10 +52,12 @@ export const getUserProfile = async (userId: string): Promise<AuthUser | null> =
     }
 
     if (!data) {
-      console.log('No employee profile found for user:', userId)
+      console.log('❌ Aucun profil employé trouvé pour:', userId)
+      console.log('💡 Vérifiez que auth_user_id est bien rempli dans la table employees')
       return null
     }
 
+    console.log('✅ Profil trouvé:', data.first_name, data.last_name)
     return {
       id: data.id,
       email: data.email,
