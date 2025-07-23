@@ -79,7 +79,7 @@ export const createEmployeeProfile = async (
 ) => {
   try {
     // Générer un ID employé unique
-    const employeeId = `EMP${Date.now().toString().slice(-6)}`
+    const employeeId = `EMP${String(Date.now()).slice(-6)}`
     
     const { data, error } = await supabase
       .from('employees')
@@ -92,7 +92,9 @@ export const createEmployeeProfile = async (
         department: profileData.department || '',
         position: profileData.position || '',
         phone: profileData.phone || '',
-        start_date: profileData.startDate || new Date().toISOString(),
+        start_date: profileData.startDate || new Date().toISOString().split('T')[0],
+        birth_date: new Date().toISOString().split('T')[0],
+        address: '',
         status: 'active',
         employee_id: employeeId
       })
