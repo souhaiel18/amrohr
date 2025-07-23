@@ -40,6 +40,19 @@ export interface AuthUser {
 export const getUserProfile = async (userId: string): Promise<AuthUser | null> => {
   try {
     console.log('🔍 Recherche du profil pour:', userId)
+    
+    // Timeout pour éviter les blocages
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout')), 3000)
+    })
+    
+    const queryPromise = supabase
+      .from('employees')
+      .select('*')
+      .eq('auth_user_id', userId)
+      .maybeSingle()
+    
+    const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
     const { data, error } = await supabase
       .from('employees')
       .select('*')

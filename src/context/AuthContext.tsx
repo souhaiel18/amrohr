@@ -63,7 +63,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       try {
         console.log('🔄 Initialisation de l\'authentification...')
+        
+        // Timeout de sécurité
+        const timeoutId = setTimeout(() => {
+          console.log('⏰ Timeout - Arrêt du chargement')
+          dispatch({ type: 'SET_LOADING', payload: false })
+        }, 5000) // 5 secondes max
+        
         const { data: { session } } = await supabase.auth.getSession()
+        clearTimeout(timeoutId)
+        
         console.log('📋 Session:', session ? 'Trouvée' : 'Aucune')
         
         if (session?.user) {
@@ -94,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Auth state change:', event)
       if (event === 'SIGNED_IN' && session?.user) {
         const profile = await getUserProfile(session.user.id)
         if (profile) {

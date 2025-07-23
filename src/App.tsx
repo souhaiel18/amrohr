@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
-import SupabaseStatus from './components/SupabaseStatus';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -19,9 +18,7 @@ import Objectives from './pages/Objectives';
 
 function App() {
   return (
-    <>
-      <SupabaseStatus />
-      <AuthProvider>
+    <AuthProvider>
         <DataProvider>
           <Router>
             <Routes>
@@ -100,8 +97,7 @@ function App() {
             </Routes>
           </Router>
         </DataProvider>
-      </AuthProvider>
-    </>
+    </AuthProvider>
   );
 }
 
