@@ -40,10 +40,15 @@ export const getUserProfile = async (userId: string): Promise<AuthUser | null> =
       .from('employees')
       .select('*')
       .eq('auth_user_id', userId)
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error fetching user profile:', error)
+      return null
+    }
+
+    if (!data) {
+      console.log('No employee profile found for user:', userId)
       return null
     }
 
