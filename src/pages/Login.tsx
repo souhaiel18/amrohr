@@ -313,7 +313,7 @@ const Login: React.FC = () => {
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="text-sm font-medium text-blue-900 mb-2">🚀 Comptes de Test Disponibles :</h4>
             <div className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-800">
-              ⚠️ <strong>Important :</strong> Ces comptes doivent être créés manuellement dans votre Dashboard Supabase (Authentication > Users) avant de pouvoir les utiliser.
+              ⚠️ <strong>Important :</strong> Ces comptes doivent être créés manuellement dans votre Dashboard Supabase (Authentication &gt; Users) avant de pouvoir les utiliser.
             </div>
             <div className="text-xs text-blue-800 space-y-1">
               <div className="grid grid-cols-1 gap-2 mt-2">
