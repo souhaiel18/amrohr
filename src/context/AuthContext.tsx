@@ -60,56 +60,150 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(authReducer, initialState)
 
   useEffect(() => {
-    // Récupérer la session actuelle
-    const getSession = async () => {
-      dispatch({ type: 'SET_LOADING', payload: false })
-      return
+    // Vérifier la session Supabase au démarrage
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session?.user) {
+          const profile = await getUserProfile(session.user.id)
+          if (profile) {
+            dispatch({ 
+              type: 'SET_USER', 
+              payload: { user: profile, supabaseUser: session.user } 
+            })
+          } else {
+            dispatch({ type: 'SET_LOADING', payload: false })
+          }
+        } else {
+          dispatch({ type: 'SET_LOADING', payload: false })
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+        dispatch({ type: 'SET_LOADING', payload: false })
+      }
     }
 
-    getSession()
+    initializeAuth()
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const profile = await getUserProfile(session.user.id)
+        if (profile) {
+          dispatch({ 
+            type: 'SET_USER', 
+            payload: { user: profile, supabaseUser: session.user } 
+          })
+        }
+      } else if (event === 'SIGNED_OUT') {
+        dispatch({ type: 'SIGN_OUT' })
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    // Mode démo - connexion simulée
-    const mockUsers = {
-      'admin@test.com': { id: '1', firstName: 'Admin', lastName: 'User', role: 'admin' as const },
-      'hr@test.com': { id: '2', firstName: 'HR', lastName: 'Manager', role: 'hr' as const },
-      'employee@test.com': { id: '3', firstName: 'Employee', lastName: 'User', role: 'employee' as const }
-    }
-    
-    const mockUser = mockUsers[email as keyof typeof mockUsers]
-    if (mockUser && password.length > 0) {
-      const user: AuthUser = {
-        ...mockUser,
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        department: 'IT',
-        position: 'Developer',
-        phone: '+1234567890',
-        startDate: '2024-01-01',
-        status: 'active'
+        password
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
       }
-      dispatch({ type: 'SET_USER', payload: { user, supabaseUser: null } })
-      return { success: true }
+
+      if (data.user) {
+        const profile = await getUserProfile(data.user.id)
+        if (profile) {
+          dispatch({ 
+            type: 'SET_USER', 
+            payload: { user: profile, supabaseUser: data.user } 
+          })
+          return { success: true }
+        } else {
+          return { success: false, error: 'Profil employé non trouvé' }
+        }
+      }
+
+      return { success: false, error: 'Erreur de connexion' }
+    } catch (error) {
+      return { success: false, error: 'Erreur de connexion' }
     }
-    
-    return { success: false, error: 'Identifiants invalides' }
   }
 
   const signUp = async (email: string, password: string, profileData: Partial<AuthUser>) => {
-    // Mode démo - inscription simulée
-    return { success: true }
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      if (data.user) {
+        // Créer le profil employé
+        await createEmployeeProfile(data.user.id, email, profileData)
+        return { success: true }
+      }
+
+      return { success: false, error: 'Erreur lors de l\'inscription' }
+    } catch (error) {
+      return { success: false, error: 'Erreur lors de l\'inscription' }
+    }
   }
 
   const signOut = async () => {
+    await supabase.auth.signOut()
     dispatch({ type: 'SIGN_OUT' })
   }
 
   const resetPassword = async (email: string) => {
-    return { success: true }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      if (error) {
+        return { success: false, error: error.message }
+      }
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Erreur lors de la réinitialisation' }
+    }
   }
 
   const updateProfile = async (updates: Partial<AuthUser>) => {
-    return { success: true }
+    try {
+      if (!state.user) return { success: false, error: 'Utilisateur non connecté' }
+      
+      const { error } = await supabase
+        .from('employees')
+        .update({
+          first_name: updates.firstName,
+          last_name: updates.lastName,
+          phone: updates.phone,
+          department: updates.department,
+          position: updates.position
+        })
+        .eq('id', state.user.id)
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      // Mettre à jour l'état local
+      const updatedUser = { ...state.user, ...updates }
+      dispatch({ 
+        type: 'SET_USER', 
+        payload: { user: updatedUser, supabaseUser: state.supabaseUser } 
+      })
+
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Erreur lors de la mise à jour' }
+    }
   }
 
   const value: AuthContextType = {

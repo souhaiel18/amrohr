@@ -1,88 +1,131 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Modal from '../components/ui/Modal';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { FileText, Upload, Download, Eye, Search, Shield, Filter } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
-// Mock data pour la démo
-const mockPayrollDocuments = [
-  {
-    id: '1',
-    employeeId: '3',
-    employeeName: 'Mike Johnson',
-    documentName: 'Bulletin de paie - Janvier 2024',
-    documentType: 'payslip' as const,
-    filePath: '/documents/payslip_jan_2024.pdf',
-    fileSize: 245000,
-    mimeType: 'application/pdf',
-    uploadedBy: '2',
-    uploadDate: '2024-01-31T10:00:00Z',
-    isConfidential: true
-  },
-  {
-    id: '2',
-    employeeId: '3',
-    employeeName: 'Mike Johnson',
-    documentName: 'Contrat de travail CDI',
-    documentType: 'contract' as const,
-    filePath: '/documents/contract_mike.pdf',
-    fileSize: 890000,
-    mimeType: 'application/pdf',
-    uploadedBy: '2',
-    uploadDate: '2022-06-15T14:30:00Z',
-    isConfidential: true
-  },
-  {
-    id: '3',
-    employeeId: '4',
-    employeeName: 'Emily Davis',
-    documentName: 'Attestation de travail',
-    documentType: 'certificate' as const,
-    filePath: '/documents/work_certificate_emily.pdf',
-    fileSize: 156000,
-    mimeType: 'application/pdf',
-    uploadedBy: '2',
-    uploadDate: '2024-01-15T09:15:00Z',
-    isConfidential: true
-  }
-];
+interface PayrollDocument {
+  id: string;
+  employee_id: string;
+  document_name: string;
+  document_type: 'payslip' | 'contract' | 'certificate' | 'administrative' | 'other';
+  file_path?: string;
+  file_size?: number;
+  mime_type?: string;
+  uploaded_by: string;
+  upload_date: string;
+  is_confidential: boolean;
+  employee_name?: string;
+  uploader_name?: string;
+}
 
 const PayrollDocuments: React.FC = () => {
   const { user } = useAuth();
-  const [documents] = useState(mockPayrollDocuments);
+  const [documents, setDocuments] = useState<PayrollDocument[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [formData, setFormData] = useState({
-    employeeId: '',
-    documentName: '',
-    documentType: 'other',
+    employee_id: '',
+    document_name: '',
+    document_type: 'other',
     file: null as File | null,
-    isConfidential: true
+    is_confidential: true
   });
 
   const isAdminOrHR = user?.role === 'admin' || user?.role === 'hr';
   
+  useEffect(() => {
+    fetchDocuments();
+    if (isAdminOrHR) {
+      fetchEmployees();
+    }
+  }, [user]);
+
+  const fetchDocuments = async () => {
+    try {
+      setLoading(true);
+      
+      let query = supabase
+        .from('payroll_documents')
+        .select(`
+          *,
+          employee:employees!payroll_documents_employee_id_fkey(first_name, last_name),
+          uploader:employees!payroll_documents_uploaded_by_fkey(first_name, last_name)
+        `);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching documents:', error);
+        return;
+      }
+
+      const formattedDocuments = data?.map(doc => ({
+        ...doc,
+        employee_name: `${doc.employee?.first_name} ${doc.employee?.last_name}`,
+        uploader_name: `${doc.uploader?.first_name} ${doc.uploader?.last_name}`
+      })) || [];
+
+      setDocuments(formattedDocuments);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('id, first_name, last_name, email')
+        .eq('status', 'active')
+        .order('first_name');
+
+      if (error) {
+        console.error('Error fetching employees:', error);
+        return;
+      }
+
+      setEmployees(data || []);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
+  };
+
   // Filtrer les documents selon les permissions
   const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.documentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.employeeName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === '' || doc.documentType === typeFilter;
+    const matchesSearch = doc.document_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (doc.employee_name && doc.employee_name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesType = typeFilter === '' || doc.document_type === typeFilter;
     
     // Règles d'accès
     let hasAccess = false;
     if (isAdminOrHR) {
       hasAccess = true; // RH/Admin voient tout
     } else {
-      hasAccess = doc.employeeId === user?.id; // Employé voit ses documents
+      hasAccess = doc.employee_id === user?.id; // Employé voit ses documents
     }
     
     return matchesSearch && matchesType && hasAccess;
   });
+
+  const employeeOptions = [
+    { value: '', label: 'Sélectionner un employé...' },
+    ...employees.map(emp => ({
+      value: emp.id,
+      label: `${emp.first_name} ${emp.last_name} (${emp.email})`
+    }))
+  ];
 
   const documentTypes = [
     { value: '', label: 'Tous les types' },
@@ -103,16 +146,52 @@ const PayrollDocuments: React.FC = () => {
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    // Ici on ajouterait la logique d'upload
-    console.log('Upload document:', formData);
-    setIsUploadModalOpen(false);
-    setFormData({
-      employeeId: '',
-      documentName: '',
-      documentType: 'other',
-      file: null,
-      isConfidential: true
-    });
+    uploadDocument();
+  };
+
+  const uploadDocument = async () => {
+    try {
+      if (!formData.file || !formData.employee_id || !formData.document_name) {
+        alert('Veuillez remplir tous les champs obligatoires');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('payroll_documents')
+        .insert({
+          employee_id: formData.employee_id,
+          document_name: formData.document_name,
+          document_type: formData.document_type,
+          file_size: formData.file.size,
+          mime_type: formData.file.type,
+          uploaded_by: user?.id,
+          is_confidential: formData.is_confidential
+        });
+
+      if (error) {
+        console.error('Error uploading document:', error);
+        alert('Erreur lors de l\'upload du document');
+        return;
+      }
+
+      // Rafraîchir la liste
+      await fetchDocuments();
+      
+      // Fermer le modal et réinitialiser
+      setIsUploadModalOpen(false);
+      setFormData({
+        employee_id: '',
+        document_name: '',
+        document_type: 'other',
+        file: null,
+        is_confidential: true
+      });
+
+      alert('Document uploadé avec succès !');
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      alert('Erreur lors de l\'upload du document');
+    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -208,33 +287,38 @@ const PayrollDocuments: React.FC = () => {
       {/* Documents List */}
       <Card>
         <CardContent className="p-0">
-          {filteredDocuments.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+              <p className="text-gray-500">Chargement des documents...</p>
+            </div>
+          ) : filteredDocuments.length > 0 ? (
             <div className="divide-y divide-gray-200">
               {filteredDocuments.map((doc) => (
                 <div key={doc.id} className="p-6 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1">
                       <div className="flex-shrink-0">
-                        {getTypeIcon(doc.documentType)}
+                        {getTypeIcon(doc.document_type)}
                       </div>
                       <div className="ml-4 flex-1">
                         <div className="flex items-center">
-                          <h4 className="text-sm font-medium text-gray-900">{doc.documentName}</h4>
-                          {doc.isConfidential && (
+                          <h4 className="text-sm font-medium text-gray-900">{doc.document_name}</h4>
+                          {doc.is_confidential && (
                             <Shield className="h-4 w-4 text-red-500 ml-2" title="Document confidentiel" />
                           )}
                         </div>
                         <div className="flex items-center mt-1 space-x-3 text-xs text-gray-500">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getTypeColor(doc.documentType)}`}>
-                            {documentTypes.find(t => t.value === doc.documentType)?.label}
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getTypeColor(doc.document_type)}`}>
+                            {documentTypes.find(t => t.value === doc.document_type)?.label}
                           </span>
-                          <span>{formatFileSize(doc.fileSize || 0)}</span>
+                          <span>{formatFileSize(doc.file_size || 0)}</span>
                           <span>•</span>
-                          <span>Uploadé le {format(parseISO(doc.uploadDate), 'dd/MM/yyyy')}</span>
+                          <span>Uploadé le {format(parseISO(doc.upload_date), 'dd/MM/yyyy')}</span>
                           {isAdminOrHR && (
                             <>
                               <span>•</span>
-                              <span>{doc.employeeName}</span>
+                              <span>{doc.employee_name}</span>
                             </>
                           )}
                         </div>
@@ -282,21 +366,16 @@ const PayrollDocuments: React.FC = () => {
           <form onSubmit={handleUpload} className="space-y-4">
             <Select
               label="Employé"
-              options={[
-                { value: '', label: 'Sélectionner un employé...' },
-                { value: '3', label: 'Mike Johnson' },
-                { value: '4', label: 'Emily Davis' },
-                { value: '5', label: 'David Brown' }
-              ]}
-              value={formData.employeeId}
-              onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
+              options={employeeOptions}
+              value={formData.employee_id}
+              onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
               required
             />
 
             <Input
               label="Nom du document"
-              value={formData.documentName}
-              onChange={(e) => setFormData({ ...formData, documentName: e.target.value })}
+              value={formData.document_name}
+              onChange={(e) => setFormData({ ...formData, document_name: e.target.value })}
               required
               placeholder="ex: Bulletin de paie - Janvier 2024"
             />
@@ -304,8 +383,8 @@ const PayrollDocuments: React.FC = () => {
             <Select
               label="Type de document"
               options={uploadTypes}
-              value={formData.documentType}
-              onChange={(e) => setFormData({ ...formData, documentType: e.target.value })}
+              value={formData.document_type}
+              onChange={(e) => setFormData({ ...formData, document_type: e.target.value })}
               required
             />
 
@@ -346,8 +425,8 @@ const PayrollDocuments: React.FC = () => {
               <input
                 id="confidential"
                 type="checkbox"
-                checked={formData.isConfidential}
-                onChange={(e) => setFormData({ ...formData, isConfidential: e.target.checked })}
+                checked={formData.is_confidential}
+                onChange={(e) => setFormData({ ...formData, is_confidential: e.target.checked })}
                 className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
               />
               <label htmlFor="confidential" className="ml-2 block text-sm text-gray-900">
