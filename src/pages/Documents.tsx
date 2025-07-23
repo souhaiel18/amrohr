@@ -59,6 +59,42 @@ const Documents: React.FC = () => {
     setFormData({ name: '', type: 'other', file: null });
   };
 
+  const handleViewDocument = (doc: any) => {
+    if (doc.url && doc.url !== '#') {
+      // Ouvrir dans un nouvel onglet
+      window.open(doc.url, '_blank');
+    } else {
+      // Simuler la visualisation pour les documents mockés
+      alert(`Visualisation du document: ${doc.name}\n\nDans une vraie application, ceci ouvrirait le document dans un viewer PDF ou téléchargerait le fichier.`);
+    }
+  };
+
+  const handleDownloadDocument = async (doc: any) => {
+    try {
+      if (doc.url && doc.url !== '#') {
+        // Télécharger depuis Supabase Storage
+        const response = await fetch(doc.url);
+        const blob = await response.blob();
+        
+        // Créer un lien de téléchargement
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = doc.name;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        // Simuler le téléchargement pour les documents mockés
+        alert(`Téléchargement du document: ${doc.name}\n\nDans une vraie application, ceci téléchargerait le fichier.`);
+      }
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      alert('Erreur lors du téléchargement du document');
+    }
+  };
+
   const getTypeIcon = (type: string) => {
     return <FileText className="h-6 w-6 text-gray-400" />;
   };
@@ -147,11 +183,19 @@ const Documents: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
-                      <Button variant="secondary" size="sm">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => handleViewDocument(doc)}
+                      >
                         <Eye className="h-4 w-4 mr-1" />
                         View
                       </Button>
-                      <Button variant="secondary" size="sm">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => handleDownloadDocument(doc)}
+                      >
                         <Download className="h-4 w-4 mr-1" />
                         Download
                       </Button>

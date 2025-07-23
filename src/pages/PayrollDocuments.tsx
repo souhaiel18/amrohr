@@ -326,11 +326,19 @@ const PayrollDocuments: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
-                      <Button variant="secondary" size="sm">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => handleViewDocument(doc)}
+                      >
                         <Eye className="h-4 w-4 mr-1" />
                         Voir
                       </Button>
-                      <Button variant="secondary" size="sm">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => handleDownloadDocument(doc)}
+                      >
                         <Download className="h-4 w-4 mr-1" />
                         Télécharger
                       </Button>
