@@ -828,6 +828,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     updateDocument,
     deleteDocument,
     uploadFile,
+    downloadFile,
+    getFileUrl,
     addAnnouncement,
     updateAnnouncement,
     deleteAnnouncement,

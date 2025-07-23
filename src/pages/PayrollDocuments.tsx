@@ -195,6 +195,53 @@ const PayrollDocuments: React.FC = () => {
     }
   };
 
+  const handleViewDocument = (doc: PayrollDocument) => {
+    if (doc.file_path) {
+      // Construire l'URL Supabase Storage
+      const { data } = supabase.storage
+        .from('documents')
+        .getPublicUrl(doc.file_path);
+      
+      if (data.publicUrl) {
+        window.open(data.publicUrl, '_blank');
+      } else {
+        alert('Impossible d\'ouvrir le document');
+      }
+    } else {
+      alert(`Visualisation du document: ${doc.document_name}\n\nDocument non disponible en ligne.`);
+    }
+  };
+
+  const handleDownloadDocument = async (doc: PayrollDocument) => {
+    try {
+      if (doc.file_path) {
+        // Télécharger depuis Supabase Storage
+        const { data, error } = await supabase.storage
+          .from('documents')
+          .download(doc.file_path);
+
+        if (error) {
+          throw error;
+        }
+
+        // Créer un lien de téléchargement
+        const url = window.URL.createObjectURL(data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = doc.document_name;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert(`Téléchargement du document: ${doc.document_name}\n\nFichier non disponible.`);
+      }
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      alert('Erreur lors du téléchargement du document');
+    }
+  };
+
   const getTypeIcon = (type: string) => {
     return <FileText className="h-6 w-6 text-gray-400" />;
   };
