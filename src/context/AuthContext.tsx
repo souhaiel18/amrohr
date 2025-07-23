@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import { User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase, AuthUser, getUserProfile, createEmployeeProfile } from '../lib/supabase'
-import { mockEmployees } from '../data/mockData'
 
 interface AuthState {
   user: AuthUser | null
@@ -61,36 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(authReducer, initialState)
 
   useEffect(() => {
-    // Vérifier la session Supabase au démarrage
     const initializeAuth = async () => {
       try {
-        // Vérifier si Supabase est configuré
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-        
-        if (!supabaseUrl || !supabaseAnonKey) {
-          console.log('Supabase non configuré, utilisation des données de démonstration')
-          // Utiliser un utilisateur de démonstration
-          const demoUser = mockEmployees[0]
-          const authUser: AuthUser = {
-            id: demoUser.id,
-            email: demoUser.email,
-            firstName: demoUser.firstName,
-            lastName: demoUser.lastName,
-            role: demoUser.role,
-            department: demoUser.department,
-            position: demoUser.position,
-            phone: demoUser.phone,
-            startDate: demoUser.startDate,
-            status: demoUser.status
-          }
-          dispatch({ 
-            type: 'SET_USER', 
-            payload: { user: authUser, supabaseUser: null } 
-          })
-          return
-        }
-        
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user) {
@@ -134,35 +105,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Vérifier si Supabase est configuré
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-      
-      if (!supabaseUrl || !supabaseAnonKey) {
-        // Mode démonstration
-        const demoUser = mockEmployees.find(emp => emp.email === email)
-        if (demoUser) {
-          const authUser: AuthUser = {
-            id: demoUser.id,
-            email: demoUser.email,
-            firstName: demoUser.firstName,
-            lastName: demoUser.lastName,
-            role: demoUser.role,
-            department: demoUser.department,
-            position: demoUser.position,
-            phone: demoUser.phone,
-            startDate: demoUser.startDate,
-            status: demoUser.status
-          }
-          dispatch({ 
-            type: 'SET_USER', 
-            payload: { user: authUser, supabaseUser: null } 
-          })
-          return { success: true }
-        }
-        return { success: false, error: 'Utilisateur non trouvé en mode démonstration' }
-      }
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password

@@ -51,21 +51,10 @@ const Objectives: React.FC = () => {
   const isManager = user?.role === 'admin' || user?.role === 'hr'; // Simplifié pour la démo
   
   useEffect(() => {
-    // Vérifier si Supabase est configuré
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-    
-    if (supabaseUrl && supabaseAnonKey) {
-      fetchObjectives();
-    } else {
-      // Mode démonstration
-      setLoading(false)
-    }
+    fetchObjectives();
     
     if (isManager) {
-      if (supabaseUrl && supabaseAnonKey) {
-        fetchEmployees();
-      }
+      fetchEmployees();
     }
   }, [user]);
 
