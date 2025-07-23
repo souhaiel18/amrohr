@@ -4,14 +4,17 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.error('Variables d\'environnement Supabase manquantes!')
+  console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'Définie' : 'Manquante')
+  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Définie' : 'Manquante')
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'pkce'
   }
 })
 
@@ -70,6 +73,9 @@ export const createEmployeeProfile = async (
   profileData: Partial<AuthUser>
 ) => {
   try {
+    // Générer un ID employé unique
+    const employeeId = `EMP${Date.now().toString().slice(-6)}`
+    
     const { data, error } = await supabase
       .from('employees')
       .insert({
@@ -83,19 +89,19 @@ export const createEmployeeProfile = async (
         phone: profileData.phone || '',
         start_date: profileData.startDate || new Date().toISOString(),
         status: 'active',
-        employee_id: `EMP${Date.now().toString().slice(-6)}`
+        employee_id: employeeId
       })
       .select()
       .single()
 
     if (error) {
       console.error('Error creating employee profile:', error)
-      return null
+      throw error
     }
 
     return data
   } catch (error) {
     console.error('Error in createEmployeeProfile:', error)
-    return null
+    throw error
   }
 }

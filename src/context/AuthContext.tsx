@@ -158,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             first_name: profileData.firstName,
             last_name: profileData.lastName
@@ -171,10 +172,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        // Créer le profil employé
-        await createEmployeeProfile(data.user.id, email, profileData)
+        try {
+          // Créer le profil employé
+          await createEmployeeProfile(data.user.id, email, profileData)
+        } catch (profileError) {
+          console.error('Error creating profile:', profileError)
+          // Ne pas bloquer l'inscription si la création du profil échoue
+        }
         
-        // Note: L'utilisateur devra confirmer son email avant de pouvoir se connecter
         dispatch({ type: 'SET_LOADING', payload: false })
         return { success: true }
       }

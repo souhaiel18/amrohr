@@ -37,6 +37,11 @@ const Login: React.FC = () => {
     setError('')
     setMessage('')
 
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs')
+      return
+    }
+
     const result = await signIn(email, password)
     if (!result.success) {
       setError(result.error || 'Erreur de connexion')
@@ -48,6 +53,11 @@ const Login: React.FC = () => {
     setError('')
     setMessage('')
 
+    if (!email || !password || !signUpData.firstName || !signUpData.lastName || !signUpData.department || !signUpData.position) {
+      setError('Veuillez remplir tous les champs obligatoires')
+      return
+    }
+
     if (password.length < 6) {
       setError('Le mot de passe doit contenir au moins 6 caractères')
       return
@@ -55,8 +65,18 @@ const Login: React.FC = () => {
 
     const result = await signUp(email, password, signUpData)
     if (result.success) {
-      setMessage('Compte créé ! Vérifiez votre email pour confirmer votre inscription.')
+      setMessage('Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
       setIsSignUp(false)
+      // Réinitialiser les champs
+      setEmail('')
+      setPassword('')
+      setSignUpData({
+        firstName: '',
+        lastName: '',
+        department: '',
+        position: '',
+        phone: ''
+      })
     } else {
       setError(result.error || 'Erreur lors de l\'inscription')
     }
@@ -293,9 +313,12 @@ const Login: React.FC = () => {
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="text-sm font-medium text-blue-900 mb-2">Mode Démo :</h4>
             <div className="text-xs text-blue-800 space-y-1">
-              <div>Créez un compte ou utilisez les identifiants de test</div>
-              <div><strong>Email :</strong> demo@company.com</div>
-              <div><strong>Mot de passe :</strong> demo123</div>
+              <div>Pour tester l'application :</div>
+              <div>1. Créez un nouveau compte avec le formulaire d'inscription</div>
+              <div>2. Ou utilisez un compte existant si vous en avez déjà créé un</div>
+              <div className="mt-2 text-blue-700">
+                <strong>Note :</strong> Assurez-vous que Supabase est configuré avec vos variables d'environnement
+              </div>
             </div>
           </div>
         )}
