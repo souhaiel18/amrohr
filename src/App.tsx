@@ -14,6 +14,8 @@ import Documents from './pages/Documents';
 import Roles from './pages/Roles';
 import Admin from './pages/Admin';
 import DataManagement from './pages/DataManagement';
+import PayrollDocuments from './pages/PayrollDocuments';
+import Objectives from './pages/Objectives';
 
 function App() {
   return (
@@ -77,6 +79,20 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <DataManagement />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/payroll-documents" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PayrollDocuments />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/objectives" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Objectives />
                   </Layout>
                 </ProtectedRoute>
               } />

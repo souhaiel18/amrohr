@@ -15,6 +15,8 @@ import {
   Shield,
   FolderOpen,
   Database
+  Target,
+  FileCheck
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -37,6 +39,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Directory', href: '/directory', icon: Users },
     { name: 'Time Off', href: '/time-off', icon: Calendar },
     { name: 'Documents', href: '/documents', icon: FolderOpen },
+    { name: 'Docs Administratifs', href: '/payroll-documents', icon: FileCheck },
+    { name: 'Objectifs', href: '/objectives', icon: Target },
     { name: 'Job Roles', href: '/roles', icon: Shield },
     { name: 'Gestion Données', href: '/data-management', icon: Database },
     ...(user?.role === 'admin' || user?.role === 'hr' ? [

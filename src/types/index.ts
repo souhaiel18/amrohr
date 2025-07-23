@@ -59,3 +59,35 @@ export interface Announcement {
   date: string;
   priority: 'low' | 'medium' | 'high';
 }
+
+export interface PayrollDocument {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  documentName: string;
+  documentType: 'payslip' | 'contract' | 'certificate' | 'administrative' | 'other';
+  filePath?: string;
+  fileSize?: number;
+  mimeType?: string;
+  uploadedBy: string;
+  uploadDate: string;
+  isConfidential: boolean;
+}
+
+export interface Objective {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  title: string;
+  description?: string;
+  targetDate?: string;
+  progressPercentage: number;
+  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  createdBy: string;
+  createdByName: string;
+  isEmployeeProposed: boolean;
+  managerEvaluation?: string;
+  employeeNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
