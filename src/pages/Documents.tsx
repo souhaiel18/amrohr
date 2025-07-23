@@ -261,32 +261,51 @@ const Documents: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               File
             </label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
-              <div className="space-y-1 text-center">
-                <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="flex text-sm text-gray-600">
-                  <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500">
-                    <span>Upload a file</span>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                      onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
+            {!formData.file ? (
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                <div className="space-y-1 text-center">
+                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="flex text-sm text-gray-600">
+                    <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500">
+                      <span>Upload a file</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                        onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        required
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    PDF, DOC, DOCX, JPG, PNG up to 10MB
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500">
-                  PDF, DOC, DOCX, JPG, PNG up to 10MB
-                </p>
               </div>
-            </div>
-            {formData.file && (
-              <p className="mt-2 text-sm text-gray-600">
-                Selected: {formData.file.name}
-              </p>
+            ) : (
+              <div className="mt-1 p-4 border-2 border-emerald-300 border-dashed rounded-md bg-emerald-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <FileText className="h-8 w-8 text-emerald-600 mr-3" />
+                    <div>
+                      <p className="text-sm font-medium text-emerald-900">{formData.file.name}</p>
+                      <p className="text-xs text-emerald-700">
+                        {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, file: null })}
+                    className="text-emerald-600 hover:text-emerald-800"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 

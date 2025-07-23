@@ -158,7 +158,7 @@ export const mockDocuments: Document[] = [
     type: 'contract',
     size: '245 KB',
     uploadDate: '2022-06-15',
-    url: '#'
+    url: 'mock://contract-1'
   },
   {
     id: '2',
@@ -168,7 +168,7 @@ export const mockDocuments: Document[] = [
     type: 'cv',
     size: '1.2 MB',
     uploadDate: '2023-01-08',
-    url: '#'
+    url: 'mock://resume-2'
   },
   {
     id: '3',
@@ -178,7 +178,7 @@ export const mockDocuments: Document[] = [
     type: 'certificate',
     size: '890 KB',
     uploadDate: '2021-10-12',
-    url: '#'
+    url: 'mock://certificate-3'
   }
 ];
 

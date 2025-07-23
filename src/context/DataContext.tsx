@@ -644,6 +644,64 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const downloadFile = async (fileUrl: string, fileName: string) => {
+    try {
+      if (fileUrl.includes('supabase')) {
+        // Fichier Supabase - extraire le path
+        const pathMatch = fileUrl.match(/\/storage\/v1\/object\/public\/documents\/(.+)$/);
+        if (pathMatch) {
+          const filePath = pathMatch[1];
+          const { data, error } = await supabase.storage
+            .from('documents')
+            .download(filePath);
+
+          if (error) throw error;
+
+          // Créer un lien de téléchargement
+          const url = window.URL.createObjectURL(data);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          throw new Error('URL de fichier invalide');
+        }
+      } else {
+        // URL externe - téléchargement direct
+        const response = await fetch(fileUrl);
+        const blob = await response.blob();
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      throw error;
+    }
+  };
+
+  const getFileUrl = async (filePath: string): Promise<string> => {
+    try {
+      const { data } = supabase.storage
+        .from('documents')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error getting file URL:', error);
+      throw error;
+    }
+  };
+
   const addDocument = async (documentData: Omit<Document, 'id'>) => {
     try {
       const { data, error } = await supabase
