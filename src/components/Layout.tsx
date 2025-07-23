@@ -14,7 +14,7 @@ import {
   X,
   Shield,
   FolderOpen,
-  Database
+  Database,
   Target,
   FileCheck
 } from 'lucide-react';
