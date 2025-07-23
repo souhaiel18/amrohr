@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import { User as SupabaseUser } from '@supabase/supabase-js'
-import { supabase, AuthUser, getUserProfile } from '../lib/supabase'
+import { supabase, AuthUser, getUserProfile, createEmployeeProfile } from '../lib/supabase'
 
 interface AuthState {
   user: AuthUser | null
@@ -62,215 +62,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Récupérer la session actuelle
     const getSession = async () => {
-      // Si pas de configuration Supabase, arrêter le chargement
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-        dispatch({ type: 'SET_LOADING', payload: false })
-        return
-      }
-
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error('Error getting session:', error)
-          dispatch({ type: 'SET_LOADING', payload: false })
-          return
-        }
-
-        if (session?.user) {
-          const profile = await getUserProfile(session.user.id)
-          if (profile) {
-            dispatch({ 
-              type: 'SET_USER', 
-              payload: { user: profile, supabaseUser: session.user } 
-            })
-          } else {
-            dispatch({ type: 'SET_LOADING', payload: false })
-          }
-        } else {
-          dispatch({ type: 'SET_LOADING', payload: false })
-        }
-      } catch (error) {
-        console.error('Error in getSession:', error)
-        dispatch({ type: 'SET_LOADING', payload: false })
-      }
-    }
-
-    getSession()
-
-    // Si pas de configuration Supabase, ne pas écouter les changements
-    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      dispatch({ type: 'SET_LOADING', payload: false })
       return
     }
 
-    // Écouter les changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email)
-        
-        if (event === 'SIGNED_IN' && session?.user) {
-          const profile = await getUserProfile(session.user.id)
-          if (profile) {
-            dispatch({ 
-              type: 'SET_USER', 
-              payload: { user: profile, supabaseUser: session.user } 
-            })
-          } else {
-            dispatch({ type: 'SET_LOADING', payload: false })
-          }
-        } else if (event === 'SIGNED_OUT') {
-          dispatch({ type: 'SIGN_OUT' })
-        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          const profile = await getUserProfile(session.user.id)
-          if (profile) {
-            dispatch({ 
-              type: 'SET_USER', 
-              payload: { user: profile, supabaseUser: session.user } 
-            })
-          } else {
-            dispatch({ type: 'SET_LOADING', payload: false })
-          }
-        } else {
-          dispatch({ type: 'SET_LOADING', payload: false })
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
+    getSession()
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true })
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (error) {
-        dispatch({ type: 'SET_LOADING', payload: false })
-        return { success: false, error: error.message }
-      }
-
-      if (data.user) {
-        const profile = await getUserProfile(data.user.id)
-        if (!profile) {
-          await supabase.auth.signOut()
-          return { success: false, error: 'Profil employé non trouvé. Contactez votre administrateur.' }
-        }
-        
-        dispatch({ 
-          type: 'SET_USER', 
-          payload: { user: profile, supabaseUser: data.user } 
-        })
-      }
-
-      return { success: true }
-    } catch (error) {
-      dispatch({ type: 'SET_LOADING', payload: false })
-      return { success: false, error: 'Erreur de connexion' }
+    // Mode démo - connexion simulée
+    const mockUsers = {
+      'admin@test.com': { id: '1', firstName: 'Admin', lastName: 'User', role: 'admin' as const },
+      'hr@test.com': { id: '2', firstName: 'HR', lastName: 'Manager', role: 'hr' as const },
+      'employee@test.com': { id: '3', firstName: 'Employee', lastName: 'User', role: 'employee' as const }
     }
+    
+    const mockUser = mockUsers[email as keyof typeof mockUsers]
+    if (mockUser && password.length > 0) {
+      const user: AuthUser = {
+        ...mockUser,
+        email,
+        department: 'IT',
+        position: 'Developer',
+        phone: '+1234567890',
+        startDate: '2024-01-01',
+        status: 'active'
+      }
+      dispatch({ type: 'SET_USER', payload: { user, supabaseUser: null } })
+      return { success: true }
+    }
+    
+    return { success: false, error: 'Identifiants invalides' }
   }
 
   const signUp = async (email: string, password: string, profileData: Partial<AuthUser>) => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true })
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            first_name: profileData.firstName,
-            last_name: profileData.lastName
-          }
-        }
-      })
-
-      if (error) {
-        dispatch({ type: 'SET_LOADING', payload: false })
-        return { success: false, error: error.message }
-      }
-
-      if (data.user) {
-        try {
-          // Créer le profil employé
-          await createEmployeeProfile(data.user.id, email, profileData)
-        } catch (profileError) {
-          console.error('Error creating profile:', profileError)
-          // Ne pas bloquer l'inscription si la création du profil échoue
-        }
-        
-        dispatch({ type: 'SET_LOADING', payload: false })
-        return { success: true }
-      }
-
-      return { success: false, error: 'Erreur lors de la création du compte' }
-    } catch (error) {
-      dispatch({ type: 'SET_LOADING', payload: false })
-      return { success: false, error: 'Erreur lors de l\'inscription' }
-    }
+    // Mode démo - inscription simulée
+    return { success: true }
   }
 
   const signOut = async () => {
-    try {
-      await supabase.auth.signOut()
-      dispatch({ type: 'SIGN_OUT' })
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
+    dispatch({ type: 'SIGN_OUT' })
   }
 
   const resetPassword = async (email: string) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      })
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      return { success: true }
-    } catch (error) {
-      return { success: false, error: 'Erreur lors de la réinitialisation' }
-    }
+    return { success: true }
   }
 
   const updateProfile = async (updates: Partial<AuthUser>) => {
-    try {
-      if (!state.user) return { success: false, error: 'Utilisateur non connecté' }
-
-      const { error } = await supabase
-        .from('employees')
-        .update({
-          first_name: updates.firstName,
-          last_name: updates.lastName,
-          phone: updates.phone,
-          department: updates.department,
-          position: updates.position
-        })
-        .eq('auth_user_id', state.supabaseUser?.id)
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      // Recharger le profil
-      const updatedProfile = await getUserProfile(state.supabaseUser!.id)
-      if (updatedProfile) {
-        dispatch({ 
-          type: 'SET_USER', 
-          payload: { user: updatedProfile, supabaseUser: state.supabaseUser } 
-        })
-      }
-
-      return { success: true }
-    } catch (error) {
-      return { success: false, error: 'Erreur lors de la mise à jour' }
-    }
+    return { success: true }
   }
 
   const value: AuthContextType = {
