@@ -47,16 +47,42 @@ const Documents: React.FC = () => {
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    addDocument({
-      ...formData,
-      employeeId: user?.id || '',
-      employeeName: `${user?.firstName} ${user?.lastName}` || '',
-      size: formData.file ? `${Math.round(formData.file.size / 1024)} KB` : '0 KB',
-      uploadDate: new Date().toISOString(),
-      url: '#'
-    });
-    setIsUploadModalOpen(false);
-    setFormData({ name: '', type: 'other', file: null });
+    
+    if (!formData.file) {
+      alert('Veuillez sélectionner un fichier');
+      return;
+    }
+
+    uploadDocumentWithFile();
+  };
+
+  const uploadDocumentWithFile = async () => {
+    try {
+      if (!formData.file || !user) return;
+
+      // Upload du fichier vers Supabase Storage
+      const fileName = `${Date.now()}_${formData.file.name}`;
+      const filePath = `documents/${user.id}/${fileName}`;
+      
+      const fileUrl = await uploadFile(formData.file, filePath);
+      
+      // Ajouter le document à la base de données
+      await addDocument({
+        ...formData,
+        employeeId: user.id,
+        employeeName: `${user.firstName} ${user.lastName}`,
+        size: `${Math.round(formData.file.size / 1024)} KB`,
+        uploadDate: new Date().toISOString(),
+        url: fileUrl
+      });
+
+      setIsUploadModalOpen(false);
+      setFormData({ name: '', type: 'other', file: null });
+      alert('Document uploadé avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de l\'upload:', error);
+      alert('Erreur lors de l\'upload du document');
+    }
   };
 
   const handleViewDocument = (doc: any) => {
@@ -71,23 +97,14 @@ const Documents: React.FC = () => {
 
   const handleDownloadDocument = async (doc: any) => {
     try {
-      if (doc.url && doc.url !== '#') {
-        // Télécharger depuis Supabase Storage
-        const response = await fetch(doc.url);
-        const blob = await response.blob();
-        
-        // Créer un lien de téléchargement
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = doc.name;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+      if (doc.url && doc.url !== '#' && !doc.url.includes('mock')) {
+        // Document réel - télécharger depuis Supabase
+        await downloadFile(doc.url, doc.name);
       } else {
-        // Simuler le téléchargement pour les documents mockés
-        alert(`Téléchargement du document: ${doc.name}\n\nDans une vraie application, ceci téléchargerait le fichier.`);
+        // Document mocké
+        alert(`Téléchargement non disponible: ${doc.name}\n\n` +
+              `Ce document fait partie des données de démonstration.\n` +
+              `Pour télécharger de vrais documents, uploadez d'abord un fichier.`);
       }
     } catch (error) {
       console.error('Erreur lors du téléchargement:', error);
