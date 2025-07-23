@@ -53,11 +53,6 @@ export const getUserProfile = async (userId: string): Promise<AuthUser | null> =
       .maybeSingle()
     
     const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
-    const { data, error } = await supabase
-      .from('employees')
-      .select('*')
-      .eq('auth_user_id', userId)
-      .maybeSingle()
 
     if (error) {
       console.error('Error fetching user profile:', error)
