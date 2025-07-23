@@ -62,6 +62,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Récupérer la session actuelle
     const getSession = async () => {
+      // Si pas de configuration Supabase, arrêter le chargement
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        dispatch({ type: 'SET_LOADING', payload: false })
+        return
+      }
+
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
@@ -73,10 +79,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           const profile = await getUserProfile(session.user.id)
-          dispatch({ 
-            type: 'SET_USER', 
-            payload: { user: profile, supabaseUser: session.user } 
-          })
+          if (profile) {
+            dispatch({ 
+              type: 'SET_USER', 
+              payload: { user: profile, supabaseUser: session.user } 
+            })
+          } else {
+            dispatch({ type: 'SET_LOADING', payload: false })
+          }
         } else {
           dispatch({ type: 'SET_LOADING', payload: false })
         }
@@ -88,6 +98,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     getSession()
 
+    // Si pas de configuration Supabase, ne pas écouter les changements
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      return
+    }
+
     // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -95,18 +110,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (event === 'SIGNED_IN' && session?.user) {
           const profile = await getUserProfile(session.user.id)
-          dispatch({ 
-            type: 'SET_USER', 
-            payload: { user: profile, supabaseUser: session.user } 
-          })
+          if (profile) {
+            dispatch({ 
+              type: 'SET_USER', 
+              payload: { user: profile, supabaseUser: session.user } 
+            })
+          } else {
+            dispatch({ type: 'SET_LOADING', payload: false })
+          }
         } else if (event === 'SIGNED_OUT') {
           dispatch({ type: 'SIGN_OUT' })
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           const profile = await getUserProfile(session.user.id)
-          dispatch({ 
-            type: 'SET_USER', 
-            payload: { user: profile, supabaseUser: session.user } 
-          })
+          if (profile) {
+            dispatch({ 
+              type: 'SET_USER', 
+              payload: { user: profile, supabaseUser: session.user } 
+            })
+          } else {
+            dispatch({ type: 'SET_LOADING', payload: false })
+          }
         } else {
           dispatch({ type: 'SET_LOADING', payload: false })
         }

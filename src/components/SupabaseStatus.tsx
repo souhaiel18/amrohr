@@ -9,29 +9,29 @@ const SupabaseStatus: React.FC = () => {
   const hasConfig = supabaseUrl && supabaseAnonKey;
   
   if (hasConfig) {
-    return null; // Ne rien afficher si tout est configuré
+    return null
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 max-w-md">
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-xl max-w-2xl mx-4">
         <div className="flex items-start">
-          <XCircle className="h-5 w-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" />
+          <AlertCircle className="h-6 w-6 text-amber-500 mt-0.5 mr-3 flex-shrink-0" />
           <div>
-            <h3 className="text-sm font-medium text-red-800">
+            <h3 className="text-lg font-medium text-gray-900">
               Configuration Supabase Manquante
             </h3>
-            <div className="mt-2 text-sm text-red-700">
+            <div className="mt-3 text-sm text-gray-700">
               <p>Pour utiliser l'authentification, vous devez :</p>
               <ol className="mt-2 list-decimal list-inside space-y-1">
                 <li>Créer un projet sur <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="underline">supabase.com</a></li>
                 <li>Créer un fichier <code className="bg-red-100 px-1 rounded">.env</code> avec :</li>
               </ol>
-              <pre className="mt-2 text-xs bg-red-100 p-2 rounded overflow-x-auto">
+              <pre className="mt-3 text-xs bg-gray-100 p-3 rounded overflow-x-auto">
 {`VITE_SUPABASE_URL=https://xxx.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key`}
               </pre>
-              <p className="mt-2">
+              <p className="mt-3">
                 <strong>Status :</strong>
               </p>
               <ul className="mt-1 space-y-1">
@@ -52,6 +52,11 @@ VITE_SUPABASE_ANON_KEY=your_anon_key`}
                   VITE_SUPABASE_ANON_KEY
                 </li>
               </ul>
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Mode démo :</strong> L'application fonctionne avec des données fictives en attendant la configuration Supabase.
+                </p>
+              </div>
             </div>
           </div>
         </div>
