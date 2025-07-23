@@ -1,79 +1,130 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Modal from '../components/ui/Modal';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { Target, Plus, Edit, Eye, TrendingUp, Calendar, User, CheckCircle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
-// Mock data pour la démo
-const mockObjectives = [
-  {
-    id: '1',
-    employeeId: '3',
-    employeeName: 'Mike Johnson',
-    title: 'Améliorer les performances du système',
-    description: 'Optimiser les requêtes de base de données pour réduire le temps de réponse de 30%',
-    targetDate: '2024-12-31',
-    progressPercentage: 65,
-    status: 'active' as const,
-    createdBy: '2',
-    createdByName: 'Sarah Wilson',
-    isEmployeeProposed: false,
-    managerEvaluation: '',
-    employeeNotes: 'Travail en cours sur l\'indexation des tables principales',
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-20T14:30:00Z'
-  },
-  {
-    id: '2',
-    employeeId: '3',
-    employeeName: 'Mike Johnson',
-    title: 'Formation en architecture cloud',
-    description: 'Obtenir une certification AWS Solutions Architect',
-    targetDate: '2024-06-30',
-    progressPercentage: 30,
-    status: 'active' as const,
-    createdBy: '3',
-    createdByName: 'Mike Johnson',
-    isEmployeeProposed: true,
-    managerEvaluation: '',
-    employeeNotes: 'Inscription faite, début des cours en ligne',
-    createdAt: '2024-01-10T09:00:00Z',
-    updatedAt: '2024-01-18T16:45:00Z'
-  }
-];
+interface Objective {
+  id: string;
+  employee_id: string;
+  title: string;
+  description?: string;
+  target_date?: string;
+  progress_percentage: number;
+  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  created_by: string;
+  is_employee_proposed: boolean;
+  manager_evaluation?: string;
+  employee_notes?: string;
+  created_at: string;
+  updated_at: string;
+  employee_name?: string;
+  creator_name?: string;
+}
 
 const Objectives: React.FC = () => {
   const { user } = useAuth();
-  const [objectives] = useState(mockObjectives);
+  const [objectives, setObjectives] = useState<Objective[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingObjective, setEditingObjective] = useState<any>(null);
   const [formData, setFormData] = useState({
-    employeeId: '',
+    employee_id: '',
     title: '',
     description: '',
-    targetDate: '',
-    isEmployeeProposed: false
+    target_date: '',
+    is_employee_proposed: false
   });
   const [progressData, setProgressData] = useState({
-    progressPercentage: 0,
-    employeeNotes: ''
+    progress_percentage: 0,
+    employee_notes: ''
   });
 
   const isManager = user?.role === 'admin' || user?.role === 'hr'; // Simplifié pour la démo
   
+  useEffect(() => {
+    fetchObjectives();
+    if (isManager) {
+      fetchEmployees();
+    }
+  }, [user]);
+
+  const fetchObjectives = async () => {
+    try {
+      setLoading(true);
+      
+      let query = supabase
+        .from('objectives')
+        .select(`
+          *,
+          employee:employees!objectives_employee_id_fkey(first_name, last_name),
+          creator:employees!objectives_created_by_fkey(first_name, last_name)
+        `);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching objectives:', error);
+        return;
+      }
+
+      const formattedObjectives = data?.map(obj => ({
+        ...obj,
+        employee_name: `${obj.employee?.first_name} ${obj.employee?.last_name}`,
+        creator_name: `${obj.creator?.first_name} ${obj.creator?.last_name}`
+      })) || [];
+
+      setObjectives(formattedObjectives);
+    } catch (error) {
+      console.error('Error fetching objectives:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('id, first_name, last_name, email')
+        .eq('status', 'active')
+        .order('first_name');
+
+      if (error) {
+        console.error('Error fetching employees:', error);
+        return;
+      }
+
+      setEmployees(data || []);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
+  };
+
   // Filtrer les objectifs selon les permissions
   const filteredObjectives = objectives.filter(obj => {
     if (isManager) {
       return true; // Manager voit tous les objectifs (ou ceux de ses subordonnés)
     } else {
-      return obj.employeeId === user?.id; // Employé voit ses objectifs
+      return obj.employee_id === user?.id; // Employé voit ses objectifs
     }
   });
+
+  const employeeOptions = [
+    { value: '', label: 'Sélectionner un employé...' },
+    ...employees.map(emp => ({
+      value: emp.id,
+      label: `${emp.first_name} ${emp.last_name} (${emp.email})`
+    }))
+  ];
 
   const statusOptions = [
     { value: 'draft', label: 'Brouillon' },
@@ -82,27 +133,56 @@ const Objectives: React.FC = () => {
     { value: 'cancelled', label: 'Annulé' }
   ];
 
-  const handleAddObjective = (e: React.FormEvent) => {
+  const handleAddObjective = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Add objective:', formData);
-    setIsAddModalOpen(false);
-    setFormData({
-      employeeId: '',
-      title: '',
-      description: '',
-      targetDate: '',
-      isEmployeeProposed: false
-    });
+    
+    try {
+      const { data, error } = await supabase
+        .from('objectives')
+        .insert({
+          employee_id: formData.employee_id,
+          title: formData.title,
+          description: formData.description,
+          target_date: formData.target_date,
+          created_by: user?.id,
+          is_employee_proposed: formData.is_employee_proposed,
+          status: 'active'
+        });
+
+      if (error) {
+        console.error('Error creating objective:', error);
+        alert('Erreur lors de la création de l\'objectif');
+        return;
+      }
+
+      // Rafraîchir la liste
+      await fetchObjectives();
+      
+      // Fermer le modal et réinitialiser
+      setIsAddModalOpen(false);
+      setFormData({
+        employee_id: '',
+        title: '',
+        description: '',
+        target_date: '',
+        is_employee_proposed: false
+      });
+
+      alert('Objectif créé avec succès !');
+    } catch (error) {
+      console.error('Error creating objective:', error);
+      alert('Erreur lors de la création de l\'objectif');
+    }
   };
 
   const handleEditObjective = (objective: any) => {
     setEditingObjective(objective);
     setFormData({
-      employeeId: objective.employeeId,
+      employee_id: objective.employee_id,
       title: objective.title,
       description: objective.description,
-      targetDate: objective.targetDate,
-      isEmployeeProposed: objective.isEmployeeProposed
+      target_date: objective.target_date,
+      is_employee_proposed: objective.is_employee_proposed
     });
     setIsEditModalOpen(true);
   };
@@ -110,9 +190,35 @@ const Objectives: React.FC = () => {
   const handleUpdateProgress = (objective: any) => {
     setEditingObjective(objective);
     setProgressData({
-      progressPercentage: objective.progressPercentage,
-      employeeNotes: objective.employeeNotes || ''
+      progress_percentage: objective.progress_percentage,
+      employee_notes: objective.employee_notes || ''
     });
+  };
+
+  const updateProgress = async () => {
+    try {
+      const { error } = await supabase
+        .from('objectives')
+        .update({
+          progress_percentage: progressData.progress_percentage,
+          employee_notes: progressData.employee_notes
+        })
+        .eq('id', editingObjective.id);
+
+      if (error) {
+        console.error('Error updating progress:', error);
+        alert('Erreur lors de la mise à jour');
+        return;
+      }
+
+      // Rafraîchir la liste
+      await fetchObjectives();
+      setEditingObjective(null);
+      alert('Progression mise à jour !');
+    } catch (error) {
+      console.error('Error updating progress:', error);
+      alert('Erreur lors de la mise à jour');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -148,7 +254,7 @@ const Objectives: React.FC = () => {
           {!isManager && (
             <Button 
               onClick={() => {
-                setFormData({ ...formData, isEmployeeProposed: true, employeeId: user?.id || '' });
+                setFormData({ ...formData, is_employee_proposed: true, employee_id: user?.id || '' });
                 setIsAddModalOpen(true);
               }}
               variant="secondary"
@@ -231,7 +337,7 @@ const Objectives: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Auto-proposés</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {filteredObjectives.filter(obj => obj.isEmployeeProposed).length}
+                  {filteredObjectives.filter(obj => obj.is_employee_proposed).length}
                 </p>
               </div>
             </div>
@@ -241,6 +347,13 @@ const Objectives: React.FC = () => {
 
       {/* Objectives List */}
       <div className="space-y-4">
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+            <p className="text-gray-500">Chargement des objectifs...</p>
+          </div>
+        ) : (
+        <>
         {filteredObjectives.map((objective) => (
           <Card key={objective.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
@@ -251,7 +364,7 @@ const Objectives: React.FC = () => {
                     <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(objective.status)}`}>
                       {statusOptions.find(s => s.value === objective.status)?.label}
                     </span>
-                    {objective.isEmployeeProposed && (
+                    {objective.is_employee_proposed && (
                       <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                         Auto-proposé
                       </span>
@@ -265,11 +378,11 @@ const Objectives: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div className="flex items-center text-sm text-gray-500">
                       <Calendar className="h-4 w-4 mr-2" />
-                      Échéance: {format(parseISO(objective.targetDate), 'dd/MM/yyyy')}
+                      Échéance: {objective.target_date ? format(parseISO(objective.target_date), 'dd/MM/yyyy') : 'Non définie'}
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <User className="h-4 w-4 mr-2" />
-                      Créé par: {objective.createdByName}
+                      Créé par: {objective.creator_name}
                     </div>
                   </div>
 
@@ -277,35 +390,35 @@ const Objectives: React.FC = () => {
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700">Progression</span>
-                      <span className="text-sm text-gray-500">{objective.progressPercentage}%</span>
+                      <span className="text-sm text-gray-500">{objective.progress_percentage}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className={`h-2 rounded-full ${getProgressColor(objective.progressPercentage)}`}
-                        style={{ width: `${objective.progressPercentage}%` }}
+                        className={`h-2 rounded-full ${getProgressColor(objective.progress_percentage)}`}
+                        style={{ width: `${objective.progress_percentage}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Employee Notes */}
-                  {objective.employeeNotes && (
+                  {objective.employee_notes && (
                     <div className="bg-blue-50 p-3 rounded-lg mb-3">
                       <h4 className="text-sm font-medium text-blue-900 mb-1">Notes de l'employé:</h4>
-                      <p className="text-sm text-blue-800">{objective.employeeNotes}</p>
+                      <p className="text-sm text-blue-800">{objective.employee_notes}</p>
                     </div>
                   )}
 
                   {/* Manager Evaluation */}
-                  {objective.managerEvaluation && (
+                  {objective.manager_evaluation && (
                     <div className="bg-green-50 p-3 rounded-lg">
                       <h4 className="text-sm font-medium text-green-900 mb-1">Évaluation du manager:</h4>
-                      <p className="text-sm text-green-800">{objective.managerEvaluation}</p>
+                      <p className="text-sm text-green-800">{objective.manager_evaluation}</p>
                     </div>
                   )}
                 </div>
 
                 <div className="flex flex-col space-y-2 ml-4">
-                  {!isManager && objective.employeeId === user?.id && (
+                  {!isManager && objective.employee_id === user?.id && (
                     <Button
                       size="sm"
                       variant="secondary"
@@ -339,6 +452,8 @@ const Objectives: React.FC = () => {
             </CardContent>
           </Card>
         ))}
+        </>
+        )}
 
         {filteredObjectives.length === 0 && (
           <Card>
@@ -377,14 +492,9 @@ const Objectives: React.FC = () => {
           {isManager && (
             <Select
               label="Employé"
-              options={[
-                { value: '', label: 'Sélectionner un employé...' },
-                { value: '3', label: 'Mike Johnson' },
-                { value: '4', label: 'Emily Davis' },
-                { value: '5', label: 'David Brown' }
-              ]}
-              value={formData.employeeId}
-              onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
+              options={employeeOptions}
+              value={formData.employee_id}
+              onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
               required
             />
           )}
@@ -413,8 +523,8 @@ const Objectives: React.FC = () => {
           <Input
             label="Date d'échéance"
             type="date"
-            value={formData.targetDate}
-            onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
+            value={formData.target_date}
+            onChange={(e) => setFormData({ ...formData, target_date: e.target.value })}
             required
           />
 
@@ -423,8 +533,8 @@ const Objectives: React.FC = () => {
               <input
                 id="employee-proposed"
                 type="checkbox"
-                checked={formData.isEmployeeProposed}
-                onChange={(e) => setFormData({ ...formData, isEmployeeProposed: e.target.checked })}
+                checked={formData.is_employee_proposed}
+                onChange={(e) => setFormData({ ...formData, is_employee_proposed: e.target.checked })}
                 className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
               />
               <label htmlFor="employee-proposed" className="ml-2 block text-sm text-gray-900">
@@ -468,13 +578,13 @@ const Objectives: React.FC = () => {
               type="range"
               min="0"
               max="100"
-              value={progressData.progressPercentage}
-              onChange={(e) => setProgressData({ ...progressData, progressPercentage: parseInt(e.target.value) })}
+              value={progressData.progress_percentage}
+              onChange={(e) => setProgressData({ ...progressData, progress_percentage: parseInt(e.target.value) })}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             />
             <div className="flex justify-between text-sm text-gray-500 mt-1">
               <span>0%</span>
-              <span className="font-medium">{progressData.progressPercentage}%</span>
+              <span className="font-medium">{progressData.progress_percentage}%</span>
               <span>100%</span>
             </div>
           </div>
@@ -486,8 +596,8 @@ const Objectives: React.FC = () => {
             <textarea
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-              value={progressData.employeeNotes}
-              onChange={(e) => setProgressData({ ...progressData, employeeNotes: e.target.value })}
+              value={progressData.employee_notes}
+              onChange={(e) => setProgressData({ ...progressData, employee_notes: e.target.value })}
               placeholder="Décrivez votre progression, les difficultés rencontrées..."
             />
           </div>
@@ -501,10 +611,7 @@ const Objectives: React.FC = () => {
               Annuler
             </Button>
             <Button
-              onClick={() => {
-                console.log('Update progress:', progressData);
-                setEditingObjective(null);
-              }}
+              onClick={updateProgress}
             >
               Sauvegarder
             </Button>
