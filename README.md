@@ -34,6 +34,11 @@ Un système complet de gestion des ressources humaines construit avec React, Typ
 - ✅ Prévisualisation et téléchargement
 - ✅ Documents administratifs séparés (bulletins de paie, etc.)
 - ✅ Gestion des documents confidentiels
+- ✅ **Dossier salarié structuré** avec catégories avancées
+- ✅ **Prévisualisation PDF/Images** intégrée dans l'interface
+- ✅ **Tags personnalisés** pour la recherche et l'organisation
+- ✅ **Gestion des versions** de documents
+- ✅ **Métadonnées JSON** pour informations supplémentaires
 
 ### Objectifs et Évaluations
 - ✅ Création et suivi d'objectifs individuels
@@ -42,6 +47,16 @@ Un système complet de gestion des ressources humaines construit avec React, Typ
 - ✅ Évaluations des managers
 - ✅ Notes et commentaires
 - ✅ Historique des performances
+
+### 📊 Tableau de Bord RH et Analytics
+- ✅ **Dashboard RH complet** avec indicateurs clés de performance
+- ✅ **Statistiques en temps réel** : employés actifs, congés, ancienneté
+- ✅ **Graphiques interactifs** (Chart.js) : barres, secteurs, courbes
+- ✅ **Calculs automatiques** : taux de turnover, jours d'absence moyens
+- ✅ **Filtres avancés** par département, rôle, statut
+- ✅ **Évolution temporelle** des congés sur 6 mois
+- ✅ **Métriques RH** : ancienneté moyenne, répartition par service
+- ✅ **Actualisation en temps réel** des données
 
 ### Administration
 - ✅ Panel d'administration complet
@@ -59,6 +74,7 @@ Un système complet de gestion des ressources humaines construit avec React, Typ
 - **Backend**: Supabase (PostgreSQL, Auth, Storage)
 - **Icons**: Lucide React
 - **Date Management**: date-fns
+- **Charts**: Chart.js avec react-chartjs-2
 - **Build Tool**: Vite
 - **Styling**: TailwindCSS avec design system personnalisé
 
@@ -120,6 +136,9 @@ Exécutez les migrations SQL dans l'ordre suivant dans l'éditeur SQL de Supabas
 
 -- 7. Créer la table objectives
 -- Copiez le contenu de la migration objectives
+
+-- 8. Créer la table employee_documents (nouveau)
+-- Copiez le contenu de la migration employee_documents avec catégories avancées
 ```
 
 6. **Configuration du Storage**
@@ -176,18 +195,85 @@ Employé: employee@test.com / employee123
 3. **Profil** : Consulter et modifier ses informations
 4. **Congés** : Soumettre des demandes de congés
 5. **Documents** : Uploader et consulter ses documents
+6. **Mon Dossier RH** : Accéder à ses documents administratifs structurés
 6. **Objectifs** : Suivre ses objectifs et proposer de nouveaux
 7. **Annuaire** : Consulter les collègues
 
 ### Pour les RH/Admins
 1. **Dashboard** : Vue d'ensemble des métriques RH
+2. **Tableau de Bord RH** : Analytics avancées avec graphiques interactifs
 2. **Gestion des employés** : CRUD complet
 3. **Approbation des congés** : Approuver/rejeter les demandes
 4. **Gestion des documents** : Accès à tous les documents
+6. **Upload de documents RH** : Gérer les dossiers salariés
 5. **Objectifs** : Créer et évaluer les objectifs
 6. **Administration** : Configuration du système
 7. **Gestion des données** : Interface CRUD avancée
 8. **Rôles et permissions** : Gestion des accès
+
+## 📊 Fonctionnalités Analytics Avancées
+
+### Tableau de Bord RH (`/hr-dashboard`)
+**Accessible aux rôles Admin et RH uniquement**
+
+#### 📈 Indicateurs Clés de Performance (KPI)
+- **Employés actifs/inactifs** avec répartition par statut
+- **Congés en attente** nécessitant une approbation
+- **Ancienneté moyenne** calculée automatiquement
+- **Taux de turnover** (employés inactifs / total)
+- **Jours d'absence** totaux et moyens par employé
+- **Répartition par département** et par rôle
+
+#### 📊 Graphiques Interactifs
+- **Graphique en barres** : Nombre d'employés par département
+- **Graphique en secteurs** : Répartition des rôles dans l'entreprise
+- **Graphique en courbes** : Évolution des demandes de congés sur 6 mois
+- **Actualisation en temps réel** avec bouton de rafraîchissement
+
+#### 🎯 Métriques Calculées Automatiquement
+```sql
+-- Exemples de calculs automatiques
+- Ancienneté moyenne = AVG(CURRENT_DATE - start_date)
+- Taux de turnover = (Employés inactifs / Total employés) * 100
+- Jours d'absence moyens = SUM(days) / COUNT(DISTINCT employee_id)
+```
+
+## 📂 Système de Dossier Salarié Avancé
+
+### Mon Dossier RH (`/employee-documents`)
+**Interface sécurisée pour la gestion des documents administratifs**
+
+#### 🗂️ Catégories de Documents Structurées
+1. **Contrat de travail** - Documents contractuels
+2. **Bulletins de paie** - Fiches de paie mensuelles
+3. **Certificats médicaux** - Arrêts maladie, certificats
+4. **Attestations** - Attestations diverses (travail, salaire, etc.)
+5. **Documents administratifs** - Formulaires, déclarations
+6. **Formation & Évaluations** - Certificats de formation, évaluations
+7. **Autres** - Documents divers
+
+#### 🔍 Fonctionnalités Avancées
+- **Tags personnalisés** pour une recherche fine
+- **Prévisualisation intégrée** PDF et images
+- **Métadonnées JSON** pour informations supplémentaires
+- **Gestion des versions** de documents
+- **Marquage confidentiel** pour documents sensibles
+- **Recherche full-text** dans les noms et descriptions
+
+#### 🔒 Sécurité Renforcée
+```sql
+-- Règles de sécurité RLS
+- Employés : Accès lecture seule à leurs documents
+- RH/Admin : Accès complet (lecture/écriture) tous documents
+- Documents confidentiels : Marquage spécial avec icône
+```
+
+#### 🎨 Interface Utilisateur Moderne
+- **Upload drag & drop** avec validation de fichiers
+- **Prévisualisation modale** plein écran
+- **Téléchargement sécurisé** via Supabase Storage
+- **Filtres par catégorie** et recherche instantanée
+- **Design responsive** adaptatif mobile/desktop
 
 ## 🔒 Sécurité
 
@@ -198,6 +284,8 @@ Employé: employee@test.com / employee123
 - **Contrôle d'accès basé sur les rôles**
 - **Stockage sécurisé des fichiers**
 - **Chiffrement des données sensibles**
+- **Séparation des documents** par employé avec RLS strict
+- **Audit trail** pour les actions sur les documents
 
 ## 📊 Base de Données
 
@@ -206,6 +294,7 @@ Employé: employee@test.com / employee123
 - **time_off_requests** : Demandes de congés
 - **documents** : Documents généraux
 - **payroll_documents** : Documents administratifs
+- **employee_documents** : Dossiers salariés structurés (nouveau)
 - **announcements** : Annonces d'entreprise
 - **objectives** : Objectifs et évaluations
 
@@ -214,6 +303,8 @@ Employé: employee@test.com / employee123
 - **Fonctions** pour la logique métier
 - **Index** pour les performances
 - **Contraintes** pour l'intégrité des données
+- **Vues matérialisées** pour les analytics
+- **Fonctions SQL** pour les statistiques RH
 
 ## 🚀 Déploiement
 
@@ -240,6 +331,8 @@ N'oubliez pas de configurer les variables d'environnement sur votre plateforme d
 - **Components** : Composants UI réutilisables
 - **Responsive** : Design adaptatif mobile-first
 - **Animations** : Micro-interactions et transitions
+- **Charts** : Graphiques interactifs avec Chart.js
+- **Modals** : Prévisualisation documents en plein écran
 
 ## 🧪 Tests et Qualité
 
@@ -274,7 +367,7 @@ Pour toute question ou problème :
 ### Fonctionnalités à venir :
 - [ ] Notifications en temps réel avec Supabase Realtime
 - [ ] Intégration calendrier (Google Calendar, Outlook)
-- [ ] Rapports avancés et analytics
+- [x] **Rapports avancés et analytics** ✅ (Tableau de bord RH implémenté)
 - [ ] API mobile React Native
 - [ ] Intégration paie externe
 - [ ] Gestion des performances avancée
@@ -282,6 +375,10 @@ Pour toute question ou problème :
 - [ ] Workflow personnalisables
 - [ ] Multi-tenant (plusieurs entreprises)
 - [ ] Intégration IA pour l'analyse RH
+- [ ] Export PDF des rapports analytics
+- [ ] Notifications push pour documents importants
+- [ ] Signature électronique de documents
+- [ ] OCR pour extraction automatique de données
 
 ### Améliorations techniques :
 - [ ] Tests unitaires et d'intégration
@@ -291,12 +388,18 @@ Pour toute question ou problème :
 - [ ] Monitoring et analytics
 - [ ] Backup automatique
 - [ ] Migration de données
+- [ ] Cache Redis pour les analytics
+- [ ] Compression d'images automatique
+- [ ] CDN pour les documents statiques
 
 ## 📈 Métriques
 
-- **Tables** : 6 tables principales
-- **Composants** : 20+ composants réutilisables
-- **Pages** : 10+ pages fonctionnelles
-- **Fonctionnalités** : 50+ fonctionnalités implémentées
+- **Tables** : 7 tables principales (+ employee_documents)
+- **Composants** : 25+ composants réutilisables
+- **Pages** : 12+ pages fonctionnelles
+- **Fonctionnalités** : 60+ fonctionnalités implémentées
 - **Sécurité** : RLS sur 100% des tables
 - **Performance** : Optimisé pour le web moderne
+- **Analytics** : 8+ indicateurs KPI automatisés
+- **Documents** : 7 catégories structurées avec prévisualisation
+- **Graphiques** : 3 types de visualisations interactives
