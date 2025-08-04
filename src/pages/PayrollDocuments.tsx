@@ -344,7 +344,6 @@ const PayrollDocuments: React.FC = () => {
             <div className="divide-y divide-gray-200">
               {filteredDocuments.map((doc) => (
                 <div key={doc.id} className="p-6 hover:bg-gray-50">
-                <div key={doc.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1">
                       <div className="flex-shrink-0">
