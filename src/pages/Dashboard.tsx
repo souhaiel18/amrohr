@@ -58,11 +58,11 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {user?.firstName}!
+          Bienvenue, {user?.firstName}!
         </h1>
-        <p className="text-gray-600">Here's what's happening at your company today.</p>
+        <p className="text-gray-600">Voici ce qui se passe dans votre entreprise aujourd'hui.</p>
       </div>
 
       {/* Stats Cards */}
@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
           const Icon = stat.icon;
           return (
             <Card key={stat.name}>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className={`p-3 rounded-lg ${stat.bgColor}`}>
@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
                       <dt className="text-sm font-medium text-gray-500 truncate">
                         {stat.name}
                       </dt>
-                      <dd className="text-2xl font-semibold text-gray-900">
+                      <dd className="text-xl sm:text-2xl font-semibold text-gray-900">
                         {stat.value}
                       </dd>
                     </dl>
@@ -95,13 +95,13 @@ const Dashboard: React.FC = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Recent Time Off Requests */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <Calendar className="h-5 w-5 mr-2 text-emerald-600" />
-              Recent Time Off Requests
+              Demandes de congés récentes
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -134,7 +134,7 @@ const Dashboard: React.FC = () => {
         {/* Company Announcements */}
         <Card>
           <CardHeader>
-            <CardTitle>Company Announcements</CardTitle>
+            <CardTitle>Annonces de l'entreprise</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -177,11 +177,11 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Gift className="h-5 w-5 mr-2 text-pink-600" />
-              Upcoming Birthdays
+              Anniversaires à venir
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {upcomingBirthdays.map((employee) => {
                 const birthDate = parseISO(employee.birthDate);
                 const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());

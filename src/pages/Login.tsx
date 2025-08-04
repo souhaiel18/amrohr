@@ -176,6 +176,7 @@ const Login: React.FC = () => {
             {isSignUp ? 'Créer un compte' : 'Connexion au système RH'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
+            <span className="font-semibold text-emerald-600">AmroHR</span> - 
             {isSignUp 
               ? 'Remplissez vos informations pour créer votre compte'
               : 'Connectez-vous avec vos identifiants'
