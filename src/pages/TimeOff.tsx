@@ -66,7 +66,7 @@ const TimeOff: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
@@ -80,9 +80,9 @@ const TimeOff: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="p-3 rounded-lg bg-blue-100">
@@ -98,7 +98,7 @@ const TimeOff: React.FC = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="p-3 rounded-lg bg-green-100">
@@ -114,7 +114,7 @@ const TimeOff: React.FC = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="p-3 rounded-lg bg-yellow-100">

@@ -33,7 +33,7 @@ const Directory: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Employee Directory</h1>
@@ -42,7 +42,7 @@ const Directory: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <div className="relative flex-1 max-w-md">
@@ -82,16 +82,16 @@ const Directory: React.FC = () => {
       </Card>
 
       {/* Results */}
-      <div className="text-sm text-gray-600 mb-4">
+      <div className="text-sm text-gray-600 mb-2">
         Showing {filteredEmployees.length} employee{filteredEmployees.length !== 1 ? 's' : ''}
       </div>
 
       {/* Employee Cards/List */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredEmployees.map((employee) => (
             <Card key={employee.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="text-center">
                   <div className="h-16 w-16 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-4">
                     <span className="text-xl font-medium text-white">
