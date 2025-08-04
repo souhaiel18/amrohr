@@ -64,7 +64,7 @@ const Documents: React.FC = () => {
       const fileName = `${Date.now()}_${formData.file.name}`;
       const filePath = `documents/${user.id}/${fileName}`;
       
-      const fileUrl = await uploadFile(formData.file, filePath);
+      // const fileUrl = await uploadFile(formData.file, filePath);
       
       // Ajouter le document à la base de données
       await addDocument({
@@ -73,7 +73,7 @@ const Documents: React.FC = () => {
         employeeName: `${user.firstName} ${user.lastName}`,
         size: `${Math.round(formData.file.size / 1024)} KB`,
         uploadDate: new Date().toISOString(),
-        url: fileUrl
+        url: '#' // Placeholder pour la démo
       });
 
       setIsUploadModalOpen(false);
@@ -99,7 +99,8 @@ const Documents: React.FC = () => {
     try {
       if (doc.url && doc.url !== '#' && !doc.url.includes('mock')) {
         // Document réel - télécharger depuis Supabase
-        await downloadFile(doc.url, doc.name);
+        // await downloadFile(doc.url, doc.name);
+        alert('Téléchargement simulé pour la démo');
       } else {
         // Document mocké
         alert(`Téléchargement non disponible: ${doc.name}\n\n` +
@@ -303,7 +304,7 @@ const Documents: React.FC = () => {
                     onClick={() => setFormData({ ...formData, file: null })}
                     className="text-emerald-600 hover:text-emerald-800"
                   >
-                    <X className="h-5 w-5" />
+                    ×
                   </button>
                 </div>
               </div>
