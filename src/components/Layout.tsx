@@ -65,13 +65,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-emerald-600">AmroHR</h1>
+            <div>
+              <h1 className="text-lg font-bold text-emerald-600">AmroHR</h1>
+              <p className="text-xs text-gray-500">{user?.firstName} {user?.lastName}</p>
+            </div>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -120,30 +123,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Bell className="h-5 w-5" />
               </button>
               
-              <div className="flex items-center space-x-2">
-                <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {user?.firstName[0]}{user?.lastName[0]}
-                    </span>
-                  </div>
-                </div>
-                <div className="hidden sm:block">
-                  <p className="text-lg font-semibold text-gray-900">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-sm text-gray-500 capitalize">{user?.role}</p>
-                </div>
-                <Button
-                  onClick={handleLogout}
-                  variant="secondary"
-                  size="sm"
-                  className="ml-3"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Déconnexion</span>
-                </Button>
-              </div>
+              <Button
+                onClick={handleLogout}
+                variant="secondary"
+                size="sm"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Déconnexion</span>
+              </Button>
             </div>
           </div>
         </div>
