@@ -265,7 +265,7 @@ const PayrollDocuments: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
@@ -305,7 +305,7 @@ const PayrollDocuments: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -344,6 +344,7 @@ const PayrollDocuments: React.FC = () => {
             <div className="divide-y divide-gray-200">
               {filteredDocuments.map((doc) => (
                 <div key={doc.id} className="p-6 hover:bg-gray-50">
+                <div key={doc.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1">
                       <div className="flex-shrink-0">

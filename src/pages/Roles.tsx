@@ -82,7 +82,7 @@ const Roles: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
@@ -96,7 +96,7 @@ const Roles: React.FC = () => {
       </div>
 
       {/* Roles Overview */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {roles.map((role) => {
           const Icon = role.icon;
           return (
