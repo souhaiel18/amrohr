@@ -71,11 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
               </svg>
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-emerald-600">AmroHR</h1>
-              <p className="text-xs text-gray-500">{user?.firstName} {user?.lastName}</p>
-            </div>
-          </div>
+            <h1 className="text-lg font-bold text-emerald-600">AmroHR</h1>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600"
@@ -119,6 +115,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
             
             <div className="flex items-center space-x-4">
+              <div className="hidden sm:block text-right">
+                <p className="text-lg font-semibold text-gray-900">{user?.firstName} {user?.lastName}</p>
+                <p className="text-sm text-gray-500">{user?.role}</p>
+              </div>
+              
               <button className="p-2 text-gray-400 hover:text-gray-600 rounded-full">
                 <Bell className="h-5 w-5" />
               </button>
