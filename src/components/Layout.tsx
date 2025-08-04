@@ -72,6 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </svg>
             </div>
             <h1 className="text-lg font-bold text-emerald-600">AmroHR</h1>
+          </div>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600"
