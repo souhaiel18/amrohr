@@ -71,11 +71,11 @@ const Dashboard: React.FC = () => {
           const Icon = stat.icon;
           return (
             <Card key={stat.name}>
-              <CardContent className="p-3">
+              <CardContent className="p-2.5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                      <Icon className={`h-6 w-6 ${stat.color}`} />
+                    <div className={`p-1.5 rounded-lg ${stat.bgColor}`}>
+                      <Icon className={`h-5 w-5 ${stat.color}`} />
                     </div>
                   </div>
                   <div className="ml-4 w-0 flex-1">
@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
                       <dt className="text-sm font-medium text-gray-500 truncate">
                         {stat.name}
                       </dt>
-                      <dd className="text-lg sm:text-xl font-semibold text-gray-900">
+                      <dd className="text-lg font-semibold text-gray-900">
                         {stat.value}
                       </dd>
                     </dl>
@@ -104,10 +104,10 @@ const Dashboard: React.FC = () => {
               Demandes de congés récentes
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-3">
+          <CardContent className="p-2.5">
+            <div className="space-y-2">
               {timeOffRequests.slice(0, 5).map((request) => (
-                <div key={request.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                <div key={request.id} className="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-b-0">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{request.employeeName}</p>
                     <p className="text-xs text-gray-500">
@@ -136,10 +136,10 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle>Annonces de l'entreprise</CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-3">
+          <CardContent className="p-2.5">
+            <div className="space-y-2">
               {announcements.slice(0, 3).map((announcement) => (
-                <div key={announcement.id} className="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
+                <div key={announcement.id} className="border-b border-gray-100 pb-2.5 last:border-b-0 last:pb-0">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className="text-sm font-medium text-gray-900 mb-1">
@@ -180,8 +180,8 @@ const Dashboard: React.FC = () => {
               Anniversaires à venir
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <CardContent className="p-2.5">
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {upcomingBirthdays.map((employee) => {
                 const birthDate = parseISO(employee.birthDate);
                 const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
@@ -190,15 +190,15 @@ const Dashboard: React.FC = () => {
                   : thisYearBirthday;
                   
                 return (
-                  <div key={employee.id} className="flex items-center p-2 bg-pink-50 rounded-lg">
+                  <div key={employee.id} className="flex items-center p-1.5 bg-pink-50 rounded-lg">
                     <div className="flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-pink-500 flex items-center justify-center">
+                      <div className="h-7 w-7 rounded-full bg-pink-500 flex items-center justify-center">
                         <span className="text-sm font-medium text-white">
                           {employee.firstName[0]}{employee.lastName[0]}
                         </span>
                       </div>
                     </div>
-                    <div className="ml-2">
+                    <div className="ml-1.5">
                       <p className="text-sm font-medium text-gray-900">
                         {employee.firstName} {employee.lastName}
                       </p>
