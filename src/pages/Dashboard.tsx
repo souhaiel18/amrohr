@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
@@ -66,15 +66,15 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.name}>
-              <CardContent className="p-2.5">
+              <CardContent className="p-2">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className={`p-1.5 rounded-lg ${stat.bgColor}`}>
+                    <div className={`p-1 rounded-lg ${stat.bgColor}`}>
                       <Icon className={`h-5 w-5 ${stat.color}`} />
                     </div>
                   </div>
@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
         {/* Recent Time Off Requests */}
         <Card>
           <CardHeader>
@@ -104,10 +104,10 @@ const Dashboard: React.FC = () => {
               Demandes de congés récentes
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-2.5">
+          <CardContent className="p-2">
             <div className="space-y-2">
               {timeOffRequests.slice(0, 5).map((request) => (
-                <div key={request.id} className="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-b-0">
+                <div key={request.id} className="flex items-center justify-between py-1 border-b border-gray-100 last:border-b-0">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{request.employeeName}</p>
                     <p className="text-xs text-gray-500">
@@ -136,10 +136,10 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle>Annonces de l'entreprise</CardTitle>
           </CardHeader>
-          <CardContent className="p-2.5">
+          <CardContent className="p-2">
             <div className="space-y-2">
               {announcements.slice(0, 3).map((announcement) => (
-                <div key={announcement.id} className="border-b border-gray-100 pb-2.5 last:border-b-0 last:pb-0">
+                <div key={announcement.id} className="border-b border-gray-100 pb-2 last:border-b-0 last:pb-0">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className="text-sm font-medium text-gray-900 mb-1">
@@ -180,8 +180,8 @@ const Dashboard: React.FC = () => {
               Anniversaires à venir
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-2.5">
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <CardContent className="p-2">
+            <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {upcomingBirthdays.map((employee) => {
                 const birthDate = parseISO(employee.birthDate);
                 const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
@@ -190,15 +190,15 @@ const Dashboard: React.FC = () => {
                   : thisYearBirthday;
                   
                 return (
-                  <div key={employee.id} className="flex items-center p-1.5 bg-pink-50 rounded-lg">
+                  <div key={employee.id} className="flex items-center p-1 bg-pink-50 rounded-lg">
                     <div className="flex-shrink-0">
-                      <div className="h-7 w-7 rounded-full bg-pink-500 flex items-center justify-center">
+                      <div className="h-6 w-6 rounded-full bg-pink-500 flex items-center justify-center">
                         <span className="text-sm font-medium text-white">
                           {employee.firstName[0]}{employee.lastName[0]}
                         </span>
                       </div>
                     </div>
-                    <div className="ml-1.5">
+                    <div className="ml-1">
                       <p className="text-sm font-medium text-gray-900">
                         {employee.firstName} {employee.lastName}
                       </p>
