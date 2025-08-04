@@ -106,33 +106,33 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-1 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
             >
               <Menu className="h-6 w-6" />
             </button>
             
             <div className="flex items-center space-x-4">
-              <button className="p-1 text-gray-400 hover:text-gray-600 rounded-full">
+              <button className="p-2 text-gray-400 hover:text-gray-600 rounded-full">
                 <Bell className="h-5 w-5" />
               </button>
               
               <div className="flex items-center space-x-2">
                 <div className="flex-shrink-0">
-                  <div className="h-7 w-7 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center">
                     <span className="text-sm font-medium text-white">
                       {user?.firstName[0]}{user?.lastName[0]}
                     </span>
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-lg font-semibold text-gray-900">
                     {user?.firstName} {user?.lastName}
                   </p>
-                  <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                  <p className="text-sm text-gray-500 capitalize">{user?.role}</p>
                 </div>
                 <Button
                   onClick={handleLogout}
