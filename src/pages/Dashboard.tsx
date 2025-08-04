@@ -56,9 +56,9 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="mb-4">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">
           Bienvenue, {user?.firstName}!
         </h1>
@@ -66,7 +66,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Recent Time Off Requests */}
         <Card>
           <CardHeader>
