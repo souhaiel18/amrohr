@@ -56,9 +56,9 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold text-gray-900">
           Bienvenue, {user?.firstName}!
         </h1>
@@ -66,12 +66,12 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.name}>
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="p-4">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className={`p-3 rounded-lg ${stat.bgColor}`}>
@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
                       <dt className="text-sm font-medium text-gray-500 truncate">
                         {stat.name}
                       </dt>
-                      <dd className="text-xl sm:text-2xl font-semibold text-gray-900">
+                      <dd className="text-lg sm:text-xl font-semibold text-gray-900">
                         {stat.value}
                       </dd>
                     </dl>
@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
         {/* Recent Time Off Requests */}
         <Card>
           <CardHeader>
@@ -104,7 +104,7 @@ const Dashboard: React.FC = () => {
               Demandes de congés récentes
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
             <div className="space-y-4">
               {timeOffRequests.slice(0, 5).map((request) => (
                 <div key={request.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
@@ -136,7 +136,7 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle>Annonces de l'entreprise</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
             <div className="space-y-4">
               {announcements.slice(0, 3).map((announcement) => (
                 <div key={announcement.id} className="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
@@ -180,8 +180,8 @@ const Dashboard: React.FC = () => {
               Anniversaires à venir
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {upcomingBirthdays.map((employee) => {
                 const birthDate = parseISO(employee.birthDate);
                 const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
@@ -190,15 +190,15 @@ const Dashboard: React.FC = () => {
                   : thisYearBirthday;
                   
                 return (
-                  <div key={employee.id} className="flex items-center p-3 bg-pink-50 rounded-lg">
+                  <div key={employee.id} className="flex items-center p-2 bg-pink-50 rounded-lg">
                     <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-pink-500 flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full bg-pink-500 flex items-center justify-center">
                         <span className="text-sm font-medium text-white">
                           {employee.firstName[0]}{employee.lastName[0]}
                         </span>
                       </div>
                     </div>
-                    <div className="ml-3">
+                    <div className="ml-2">
                       <p className="text-sm font-medium text-gray-900">
                         {employee.firstName} {employee.lastName}
                       </p>
