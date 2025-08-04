@@ -72,10 +72,10 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
             <div className="flex items-center">
               <div className="h-20 w-20 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -143,12 +143,12 @@ const Profile: React.FC = () => {
 
       {/* Tab Content */}
       {activeTab === 'personal' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Contact Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {isEditing ? (
                 <>
                   <Input

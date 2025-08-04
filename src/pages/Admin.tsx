@@ -138,7 +138,7 @@ const Admin: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
@@ -146,9 +146,9 @@ const Admin: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="p-3 rounded-lg bg-blue-100">
@@ -164,7 +164,7 @@ const Admin: React.FC = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="p-3 rounded-lg bg-green-100">
@@ -182,7 +182,7 @@ const Admin: React.FC = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="p-3 rounded-lg bg-yellow-100">
@@ -198,7 +198,7 @@ const Admin: React.FC = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="p-3 rounded-lg bg-red-100">
