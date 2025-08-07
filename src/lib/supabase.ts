@@ -46,7 +46,7 @@ export const getUserProfile = async (userId: string): Promise<AuthUser | null> =
     
     // Timeout pour éviter les blocages
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Timeout')), 3000)
+      setTimeout(() => reject(new Error('Timeout')), 10000)
     })
     
     const queryPromise = supabase
