@@ -138,7 +138,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="p-2 sm:p-4 lg:p-6">
+        <main className="pt-0 px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6">
           {children}
         </main>
       </div>
